@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.github.kulminaator</groupId>
-  <artifactId>pico.s3</artifactId>
+  <artifactId>pico-s3</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <name>pico-s3</name>
