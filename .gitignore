@@ -23,4 +23,5 @@
 hs_err_pid*
 /.idea
 /pico.s3.iml
+/pico-s3.iml
 /target
