@@ -43,7 +43,7 @@ public class PicoClient implements Client {
     public List<S3Object> listObjects(String bucket, String prefix) throws IOException {
         /*make a url request to  https://s3-eu-west-1.amazonaws.com/bucket/?list-type=2&start-after=prefix */
         final Map<String,List<String>> headers = new HashMap<>();
-        final String params = "?list-type=2";
+        final String params = "list-type=2";
 
         HttpRequest request = new HttpRequest();
         request.setHeaders(headers);
@@ -51,6 +51,9 @@ public class PicoClient implements Client {
         request.setHost(this.getS3Host());
         request.setPath(this.getS3Path(bucket, prefix));
         request.setParams(params);
+        request.setRegion(this.region);
+
+        this.secureRequest(request);
 
         final HttpResponse response = this.httpClient.makeRequest(request);
 
@@ -78,6 +81,7 @@ public class PicoClient implements Client {
         request.setProtocol(this.getS3HttpProtocol());
         request.setHost(this.getS3Host());
         request.setPath(this.getS3Path(bucket, object));
+        request.setRegion(this.region);
 
         this.secureRequest(request);
 

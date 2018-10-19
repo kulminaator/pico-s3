@@ -43,7 +43,7 @@ public class PicoSignatureCalculator {
         final String date = this.getFormattedDate(now);
         final String dateTime = this.getFormattedDateTime(now);
 
-        this.addRequiredHeaders(request, dateTime);
+        this.addRequiredHeaders(request, dateTime, credentialsProvider);
 
         final String accessKey = credentialsProvider.getAccessKeyId();
         final String secretAccessKey = credentialsProvider.getSecretAccessKey();
@@ -51,6 +51,9 @@ public class PicoSignatureCalculator {
         final String scope = date + request.getRegion() + "/s3/aws4_request";
 
         final String canonical = this.getCanonicalRequest(request);
+
+        System.out.println("*** Canonical is : \n" + canonical + "//END");
+
         final String stringToSign = this.getStringToSign(dateTime, scope, canonical);
 
         final byte[] dateKey = hmacSha256("AWS4"+secretAccessKey, date);
@@ -67,17 +70,20 @@ public class PicoSignatureCalculator {
         authHeaderContent.append("AWS4-HMAC-SHA256 ")
                 .append("Credential=").append(accessKey)
                 .append("/").append(date).append("/").append(request.getRegion())
-                .append("s3/aws4_request").append(",")
+                .append("/s3/aws4_request").append(",")
                 .append("SignedHeaders=").append(signedHeaders)
                 .append(",").append("Signature=").append(hexSignature);
 
         request.setHeader("Authorization", authHeaderContent.toString());
     }
 
-    private void addRequiredHeaders(HttpRequest request, String dateTime) {
+    private void addRequiredHeaders(HttpRequest request, String dateTime, CredentialsProvider credentialsProvider) {
         request.setHeader("Host", request.getHost());
         request.setHeader("x-amz-date", dateTime);
         request.setHeader("x-amz-content-sha256", this.sha256(request.getBody()));
+        if (credentialsProvider.getSessionToken() != null) {
+            request.setHeader("x-amz-security-token", credentialsProvider.getSessionToken());
+        }
     }
 
     private String getSignedHeaders(HttpRequest request) {

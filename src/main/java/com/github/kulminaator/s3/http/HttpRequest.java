@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class HttpRequest {
-    private String method;
+    private String method = "GET";
     private String protocol;
     private String host;
     private String path;

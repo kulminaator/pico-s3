@@ -68,7 +68,7 @@ public class PicoClientTest {
         assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
         assertEquals("https", captor.getValue().getProtocol());
         assertEquals("/my-bucket", captor.getValue().getPath());
-        assertEquals("?list-type=2", captor.getValue().getParams());
+        assertEquals("list-type=2", captor.getValue().getParams());
 
 
         assertTrue(objectList.size() > 0);
