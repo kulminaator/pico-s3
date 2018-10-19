@@ -1,6 +1,7 @@
 package com.github.kulminaator.s3.auth;
 
 import com.github.kulminaator.s3.http.HttpClient;
+import com.github.kulminaator.s3.http.HttpRequest;
 import com.github.kulminaator.s3.http.HttpResponse;
 import com.github.kulminaator.s3.http.PicoHttpClient;
 
@@ -67,7 +68,12 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
             final String host = "http://169.254.169.254";
             final String path = "/latest/meta-data/iam/security-credentials/";
 
-            HttpResponse response = this.client.makeGetRequest(host + path, Collections.emptyMap());
+            HttpRequest request = new HttpRequest();
+            request.setProtocol("http");
+            request.setHost("169.254.169.254");
+            request.setPath("/latest/meta-data/iam/security-credentials/");
+
+            HttpResponse response = this.client.makeRequest(request);
 
             this.parseCredentials(new String(response.getBody(), StandardCharsets.UTF_8));
         } catch (Exception exception) {

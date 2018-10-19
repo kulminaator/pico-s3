@@ -2,6 +2,7 @@ package com.github.kulminaator.s3;
 
 import com.github.kulminaator.s3.auth.CredentialsProvider;
 import com.github.kulminaator.s3.http.HttpClient;
+import com.github.kulminaator.s3.http.HttpRequest;
 import com.github.kulminaator.s3.http.HttpResponse;
 import com.github.kulminaator.s3.http.PicoHttpClient;
 import com.github.kulminaator.s3.xml.S3XmlParser;
@@ -35,25 +36,23 @@ public class PicoClient implements Client {
 
     @Override
     public List<S3Object> listObjects(String bucket) throws IOException {
-        /*make a url request to  https://s3-eu-west-1.amazonaws.com/bucket/?list-type=2*/
-        final Map<String, String> headers = new HashMap<>();
-        final String params = "?list-type=2";
-        final HttpResponse response = this.httpClient.makeGetRequest(this.buildUrl(bucket, null) + params, headers);
-
-        final Document s3ListingDocument = S3XmlParser.parseS3Xml(new String(response.getBody(),
-                StandardCharsets.UTF_8));
-
-        final List<S3Object> collectedList = S3XmlParser.parseObjectsFromXml(s3ListingDocument);
-        return collectedList;
+        return this.listObjects(bucket, null);
     }
 
     @Override
     public List<S3Object> listObjects(String bucket, String prefix) throws IOException {
         /*make a url request to  https://s3-eu-west-1.amazonaws.com/bucket/?list-type=2&start-after=prefix */
-        final Map<String, String> headers = new HashMap<>();
-        final String encodedPrefix = URLEncoder.encode(prefix, StandardCharsets.UTF_8.name());
-        final String params = "?list-type=2&start-after=" + encodedPrefix;
-        final HttpResponse response = this.httpClient.makeGetRequest(this.buildUrl(bucket, null) + params, headers);
+        final Map<String,List<String>> headers = new HashMap<>();
+        final String params = "?list-type=2";
+
+        HttpRequest request = new HttpRequest();
+        request.setHeaders(headers);
+        request.setProtocol(this.getS3HttpProtocol());
+        request.setHost(this.getS3Host());
+        request.setPath(this.getS3Path(bucket, prefix));
+        request.setParams(params);
+
+        final HttpResponse response = this.httpClient.makeRequest(request);
 
         final Document s3ListingDocument = S3XmlParser.parseS3Xml(new String(response.getBody(),
                 StandardCharsets.UTF_8));
@@ -64,36 +63,49 @@ public class PicoClient implements Client {
 
     @Override
     public InputStream getObjectDataAsInputStream(String bucket, String object) throws IOException {
-        final Map<String, String> headers = new HashMap<>();
-        final HttpResponse response = this.httpClient.makeGetRequest(buildUrl(bucket, object), headers);
-        return new ByteArrayInputStream(response.getBody());
+        return new ByteArrayInputStream(this.getObjectData(bucket, object));
     }
 
     @Override
     public String getObjectDataAsString(String bucket, String object) throws IOException {
-        final Map<String, String> headers = new HashMap<>();
-        final HttpResponse response = this.httpClient.makeGetRequest(buildUrl(bucket, object), headers);
-
-        return new String(response.getBody(), StandardCharsets.UTF_8);
+        return new String(this.getObjectData(bucket, object), StandardCharsets.UTF_8);
     }
 
-    private String buildUrl(final String bucket, final String object) {
+    private byte[] getObjectData(String bucket, String object) throws IOException {
+        final Map<String,List<String>> headers = new HashMap<>();
+        HttpRequest request = new HttpRequest();
+        request.setHeaders(headers);
+        request.setProtocol(this.getS3HttpProtocol());
+        request.setHost(this.getS3Host());
+        request.setPath(this.getS3Path(bucket, object));
+
+        final HttpResponse response = this.httpClient.makeRequest(request);
+        return response.getBody();
+    }
+
+
+
+    private String getS3Host() {
         final StringBuilder builder = new StringBuilder();
-        if (this.https) {
-            builder.append("https://");
-        } else {
-            builder.append("http://");
-        }
         builder.append("s3-");
         builder.append(this.region);
-        builder.append(".amazonaws.com/");
-        builder.append(bucket);
-        if (object != null) {
-
-            builder.append("/");
-            builder.append(object);
-        }
+        builder.append(".amazonaws.com");
         return builder.toString();
+    }
+
+    private String getS3HttpProtocol() {
+        if (this.https) {
+            return "https";
+        } else {
+            return "http";
+        }
+    }
+
+    private String getS3Path(String bucket, String prefix) {
+        if (prefix == null) {
+            return "/" + bucket;
+        }
+        return "/" + bucket + "/" + prefix;
     }
 
     private void setHttps(final boolean https) {

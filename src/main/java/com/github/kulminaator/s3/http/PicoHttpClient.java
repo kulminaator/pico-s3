@@ -9,6 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +28,10 @@ public class PicoHttpClient implements HttpClient {
     }
 
     @Override
-    public HttpResponse makeGetRequest(final String urlString, final Map<String, String> headers) throws IOException {
+    public HttpResponse makeRequest(HttpRequest request) throws IOException {
+        final String urlString = this.buildUrlString(request);
+        final Map <String, String> headers = this.remapHeaders(request.getHeaders());
+
         // request is prepared
         final URL url = new URL(urlString);
 
@@ -59,6 +64,26 @@ public class PicoHttpClient implements HttpClient {
         connection.disconnect();
 
         return response;
+    }
+
+    private Map<String, String> remapHeaders(Map<String, List<String>> headers) {
+        final Map<String, String> map = new HashMap<>();
+        for (final Map.Entry<String, List<String>> header : headers.entrySet()) {
+            map.put(header.getKey(), String.join(";", header.getValue()));
+        }
+        return map;
+    }
+
+    private String buildUrlString(HttpRequest request) {
+        final StringBuilder pathBuider = new StringBuilder();
+        pathBuider.append(request.getProtocol())
+                .append("://")
+                .append(request.getHost())
+                .append(request.getPath());
+        if (request.getParams() != null) {
+                pathBuider.append(request.getParams());
+        }
+        return pathBuider.toString();
     }
 
     private void debug(String s) {

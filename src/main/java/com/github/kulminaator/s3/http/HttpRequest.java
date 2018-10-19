@@ -1,5 +1,6 @@
 package com.github.kulminaator.s3.http;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,7 @@ public class HttpRequest {
     private String path;
     private String params;
     private byte[] body;
-    private Map<String, List<String>> headers;
+    private Map<String, List<String>> headers = new HashMap<>();
 
     public HttpRequest() {
     }

@@ -1,15 +1,21 @@
 package com.github.kulminaator.s3.auth;
 
 import com.github.kulminaator.s3.http.HttpClient;
+import com.github.kulminaator.s3.http.HttpRequest;
 import com.github.kulminaator.s3.http.HttpResponse;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class InstanceCredentialsProviderTest {
 
@@ -21,7 +27,7 @@ public class InstanceCredentialsProviderTest {
 
         HttpResponse response = new HttpResponse();
         response.setBody(expectedAmazonResponse().getBytes(StandardCharsets.UTF_8));
-        when(customClient.makeGetRequest(any(), any())).thenReturn(response);
+        when(customClient.makeRequest(any())).thenReturn(response);
 
         //when
         String acceessKeyId = provider.getAccessKeyId();
@@ -29,8 +35,14 @@ public class InstanceCredentialsProviderTest {
         String token = provider.getSessionToken();
 
         //then
-        verify(customClient, times(1))
-                .makeGetRequest(eq("http://169.254.169.254/latest/meta-data/iam/security-credentials/"), any());
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(customClient, times(1)).makeRequest(captor.capture());
+
+        assertEquals("169.254.169.254", captor.getValue().getHost());
+        assertEquals("http", captor.getValue().getProtocol());
+        assertEquals("/latest/meta-data/iam/security-credentials/", captor.getValue().getPath());
+        assertNull(null, captor.getValue().getParams());
+
 
         assertEquals(acceessKeyId, "expected-key-id");
         assertEquals(secretKey, "expected-secret-key-value-be-here");
@@ -49,7 +61,7 @@ public class InstanceCredentialsProviderTest {
         HttpResponse goodResponse = new HttpResponse();
         goodResponse.setBody(expectedAmazonResponse().getBytes(StandardCharsets.UTF_8));
 
-        when(customClient.makeGetRequest(any(), any())).thenReturn(expiredResponse, goodResponse);
+        when(customClient.makeRequest(any())).thenReturn(expiredResponse, goodResponse);
 
         //when
         String acceessKeyId = provider.getAccessKeyId();
@@ -57,8 +69,8 @@ public class InstanceCredentialsProviderTest {
         String token = provider.getSessionToken();
 
         //then
-        verify(customClient, times(2))
-                .makeGetRequest(eq("http://169.254.169.254/latest/meta-data/iam/security-credentials/"), any());
+
+        verify(customClient, times(2)).makeRequest(any());
 
         // our first request returned expired response
         // imagine it happened in the past a long time ago,

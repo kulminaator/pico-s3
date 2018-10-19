@@ -1,21 +1,26 @@
 package com.github.kulminaator.s3;
 
 import com.github.kulminaator.s3.http.HttpClient;
+import com.github.kulminaator.s3.http.HttpRequest;
 import com.github.kulminaator.s3.http.HttpResponse;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class PicoClientTest {
 
@@ -26,17 +31,23 @@ public class PicoClientTest {
     public void fetches_object_data() throws IOException {
         // given
         Client client = this.buildClient();
-        when(this.httpClient.makeGetRequest(any(), any())).thenReturn(this.buildResponseOf("object data here"));
+        when(this.httpClient.makeRequest(any())).thenReturn(this.buildResponseOf("object data here"));
 
         //when
         String result = client.getObjectDataAsString("my-bucket", "my-object-folder/my-object");
 
         //then
-        String expectedPath = "https://s3-elbonia-central-1.amazonaws.com/my-bucket/my-object-folder/my-object";
-        Map<String, String> expectedParams = new HashMap<>();
-        verify(this.httpClient, times(1)).makeGetRequest(expectedPath, expectedParams);
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        // Map<String, String> expectedParams = new HashMap<>();
+        verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
-        assertEquals(result, "object data here");
+        assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("https", captor.getValue().getProtocol());
+        assertEquals("/my-bucket/my-object-folder/my-object", captor.getValue().getPath());
+        assertNull(null, captor.getValue().getParams());
+
+
+        assertEquals("object data here", result);
     }
 
 
@@ -45,16 +56,20 @@ public class PicoClientTest {
     public void fetches_objects_listing() throws IOException {
         // given
         Client client = this.buildClient();
-        when(this.httpClient.makeGetRequest(any(), any())).thenReturn(
+        when(this.httpClient.makeRequest(any())).thenReturn(
                 this.buildResponseOfResource("s3_response_content.xml"));
 
         //when
         List<S3Object> objectList = client.listObjects("my-bucket");
 
-        //then
-        String expectedPath = "https://s3-elbonia-central-1.amazonaws.com/my-bucket?list-type=2";
-        Map<String, String> expectedParams = new HashMap<>();
-        verify(this.httpClient, times(1)).makeGetRequest(expectedPath, expectedParams);
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(this.httpClient, times(1)).makeRequest(captor.capture());
+
+        assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("https", captor.getValue().getProtocol());
+        assertEquals("/my-bucket", captor.getValue().getPath());
+        assertEquals("?list-type=2", captor.getValue().getParams());
+
 
         assertTrue(objectList.size() > 0);
         assertTrue(objectList.stream().anyMatch(o -> o.getKey().equals("text_data_demo.txt")));

@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -57,7 +58,10 @@ public class ListAndFetchTest {
                 .withHttpClient(new PicoHttpClient(true))
                 .withRegion("eu-west-1")
                 .build();
-        pClient.getObjectDataAsString(this.bucketName, "public-read-folder/anyone_can_read_this.txt");
+        final String data =
+                pClient.getObjectDataAsString(this.bucketName, "public-read-folder/anyone_can_read_this.txt");
+
+        assertEquals("anyone can read this\n", data);
     }
 
     @Test

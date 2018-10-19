@@ -3,9 +3,12 @@ package com.github.kulminaator.s3.auth;
 import com.github.kulminaator.s3.http.HttpRequest;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class PicoSignatureCalculatorTest {
 
