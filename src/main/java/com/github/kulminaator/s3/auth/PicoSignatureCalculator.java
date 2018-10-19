@@ -2,14 +2,21 @@ package com.github.kulminaator.s3.auth;
 
 import com.github.kulminaator.s3.http.HttpRequest;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Auth header calculation class. See details from here:
@@ -33,24 +40,67 @@ public class PicoSignatureCalculator {
         this.addSignatureHeader(request, credentialsProvider);
     }
 
-    private String addSignatureHeader(HttpRequest request, CredentialsProvider credentialsProvider) {
+    private void addSignatureHeader(HttpRequest request, CredentialsProvider credentialsProvider) {
+        final Instant now = this.clock.instant();
+        final String date = this.getFormattedDate(now);
+        final String dateTime = this.getFormattedDateTime(now);
+
+        this.addRequiredHeaders(request, dateTime);
+
         final String accessKey = credentialsProvider.getAccessKeyId();
         final String secretAccessKey = credentialsProvider.getSecretAccessKey();
-        final String date = this.getFormattedDate();
-        final String region = "region";
-        final String service = "s3";
-        final String v4Request = "/aws4_request";
 
-        return null;
+        final String scope = date + request.getRegion() + "/s3/aws4_request";
+
+        final String canonical = this.getCanonicalRequest(request);
+        final String stringToSign = this.getStringToSign(dateTime, scope, canonical);
+
+        final byte[] dateKey = hmacSha256("AWS4"+secretAccessKey, date);
+        final byte[] dateRegionKey = hmacSha256(dateKey, request.getRegion());
+        final byte[] dateRegionServiceKey = hmacSha256(dateRegionKey, "<aws-service>");
+        final byte[] signingKey = hmacSha256(dateRegionServiceKey, "aws4_request");
+
+        final byte[] signature = hmacSha256(stringToSign.getBytes(StandardCharsets.UTF_8), signingKey);
+
+        final String hexSignature = this.hex(signature);
+
+        final StringBuilder authHeaderContent = new StringBuilder();
+        final String signedHeaders = this.getSignedHeaders(request);
+        authHeaderContent.append("AWS4-HMAC-SHA256 ")
+                .append("Credential=").append(accessKey)
+                .append("/").append(date).append("/").append(request.getRegion())
+                .append("s3/aws4_request").append(",")
+                .append("SignedHeaders=").append(signedHeaders)
+                .append(",").append("Signature=").append(hexSignature);
+
+        request.setHeader("Authorization", authHeaderContent.toString());
+    }
+
+    private void addRequiredHeaders(HttpRequest request, String dateTime) {
+        request.setHeader("Host", request.getHost());
+        request.setHeader("x-amz-date", dateTime);
+        request.setHeader("x-amz-content-sha256", this.sha256(request.getBody()));
+    }
+
+    private String getSignedHeaders(HttpRequest request) {
+        final Map<String, String> canonicalHeaders = this.getCanonicalHeaders(request);
+        return String.join(";", canonicalHeaders.keySet());
+    }
+
+    private String getStringToSign(String timestampString, String scope, String canonical) {
+        return "AWS4-HMAC-SHA256" + "\n" +
+                timestampString + "\n" +
+                scope + "\n" +
+                this.sha256(canonical.getBytes(StandardCharsets.UTF_8));
     }
 
     protected String getCanonicalRequest(HttpRequest request) {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         builder.append(request.getMethod()).append("\n")
             .append(request.getPath()).append("\n")
             .append(request.getParams()).append("\n");
-        Map<String, String> canonicalHeaders = this.getCanonicalHeaders(request);
-        for (Map.Entry<String, String> cHeader : canonicalHeaders.entrySet()) {
+        final Map<String, String> canonicalHeaders = this.getCanonicalHeaders(request);
+        for (final Map.Entry<String, String> cHeader : canonicalHeaders.entrySet()) {
             builder.append(cHeader.getKey());
             builder.append(":");
             builder.append(cHeader.getValue());
@@ -63,16 +113,42 @@ public class PicoSignatureCalculator {
         return builder.toString();
     }
 
-    private String sha256(byte[] body) {
+
+    private byte[] hmacSha256(byte[] data, String key) {
+        return this.hmacSha256(data, key.getBytes(StandardCharsets.UTF_8));
+    }
+
+
+    private byte[] hmacSha256(String data, String key) {
+        return this.hmacSha256(data.getBytes(StandardCharsets.UTF_8), key.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private byte[] hmacSha256(byte[] data, byte[] key) {
+        try {
+            final Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
+            final SecretKeySpec secret_key = new SecretKeySpec(key, "HmacSHA256");
+            sha256_HMAC.init(secret_key);
+            return sha256_HMAC.doFinal(data);
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException("Platform not sane, missing sha256 or failing to construct key", e);
+        }
+    }
+
+    private byte[] rawSha256(byte[] body) {
         final MessageDigest digest = getSha256Digest();
         byte[] digested = digest.digest(body);
+        return digested;
+    }
+
+    private String sha256(byte[] body) {
+        byte[] digested = this.rawSha256(body);
+        return this.hex(digested);
+    }
+
+    private String hex(byte[] data) {
         final StringBuilder hexString = new StringBuilder();
-        for (byte rawByte : digested) {
-            String hex = Integer.toHexString(rawByte & 0xFF);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
+        for (final byte rawByte : data) {
+            hexString.append(String.format("%02x", rawByte & 0XFF));
         }
         return hexString.toString().toLowerCase();
     }
@@ -86,7 +162,7 @@ public class PicoSignatureCalculator {
     }
 
     private Map<String, String> getCanonicalHeaders(HttpRequest request) {
-        TreeMap<String, String> map = new TreeMap<>();
+        final TreeMap<String, String> map = new TreeMap<>();
         for (Map.Entry<String, List<String>> e : request.getHeaders().entrySet()) {
             final String value = String.join(";", e.getValue()).replaceAll(" +", " ");
             map.put(e.getKey().toLowerCase().trim(), value);
@@ -94,7 +170,11 @@ public class PicoSignatureCalculator {
         return map;
     }
 
-    private String getFormattedDate() {
-        return this.clock.instant().atZone(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    private String getFormattedDate(Instant instant) {
+        return instant.atZone(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    }
+
+    private String getFormattedDateTime(Instant instant) {
+        return instant.atZone(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmSS'Z'"));
     }
 }

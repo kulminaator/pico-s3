@@ -1,5 +1,6 @@
 package com.github.kulminaator.s3.http;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +11,9 @@ public class HttpRequest {
     private String host;
     private String path;
     private String params;
-    private byte[] body;
+    private byte[] body = new byte[0];
     private Map<String, List<String>> headers = new HashMap<>();
+    private String region;
 
     public HttpRequest() {
     }
@@ -70,5 +72,22 @@ public class HttpRequest {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    public String getRegion() {
+        return region;
+    }
+
+    public void setRegion(String region) {
+        this.region = region;
+    }
+
+    /**
+     * Set a header to one exact value.
+     * @param key The key.
+     * @param value The value.
+     */
+    public void setHeader(String key, String value) {
+        this.headers.put(key, Collections.singletonList(value));
     }
 }

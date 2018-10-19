@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PicoSignatureCalculatorTest {
 
@@ -36,6 +37,41 @@ public class PicoSignatureCalculatorTest {
         final String expectedRequest = this.getExpectedRequest();
 
         assertEquals(canonicalRequest, expectedRequest);
+    }
+
+    @Test
+    public void adds_auth_header_with_signature() {
+        /*
+            GET ?lifecycle HTTP/1.1
+            Host: examplebucket.s3.amazonaws.com
+            Authorization: SignatureToBeCalculated
+            x-amz-date: 20130524T000000Z
+            x-amz-content-sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+         */
+        // given
+
+        final PicoSignatureCalculator calculator = new PicoSignatureCalculator();
+        final HttpRequest request = new HttpRequest();
+        request.setHost("examplebucket.s3.amazonaws.com");
+        request.setRegion("us-east-1");
+        request.setPath("");
+        request.setParams("?lifecycle");
+        request.setMethod("GET");
+        request.setProtocol("https");
+
+        // when
+        calculator.addSignatureHeaderForRequest(request, this.getSimpleCredentialsProvider());
+
+        //then
+        assertTrue(request.getHeaders().containsKey("x-amz-content-sha256"));
+    }
+
+    private CredentialsProvider getSimpleCredentialsProvider() {
+        SimpleCredentialsProvider provider = new SimpleCredentialsProvider();
+        provider.setAccesKeyId("this is secret");
+        provider.setSecretAccessKey("this is secret");
+        // no token on this simple credentials set
+        return provider;
     }
 
     private String getExpectedRequest() {

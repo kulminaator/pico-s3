@@ -1,6 +1,7 @@
 package com.github.kulminaator.s3;
 
 import com.github.kulminaator.s3.auth.CredentialsProvider;
+import com.github.kulminaator.s3.auth.PicoSignatureCalculator;
 import com.github.kulminaator.s3.http.HttpClient;
 import com.github.kulminaator.s3.http.HttpRequest;
 import com.github.kulminaator.s3.http.HttpResponse;
@@ -79,11 +80,16 @@ public class PicoClient implements Client {
         request.setHost(this.getS3Host());
         request.setPath(this.getS3Path(bucket, object));
 
+        this.secureRequest(request);
+
         final HttpResponse response = this.httpClient.makeRequest(request);
         return response.getBody();
     }
 
-
+    private void secureRequest(HttpRequest request) {
+        final PicoSignatureCalculator calculator = new PicoSignatureCalculator();
+        calculator.addSignatureHeaderForRequest(request, this.credentialsProvier);
+    }
 
     private String getS3Host() {
         final StringBuilder builder = new StringBuilder();
