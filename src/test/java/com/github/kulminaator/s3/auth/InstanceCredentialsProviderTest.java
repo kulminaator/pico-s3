@@ -21,7 +21,7 @@ public class InstanceCredentialsProviderTest {
 
         HttpResponse response = new HttpResponse();
         response.setBody(expectedAmazonResponse().getBytes(StandardCharsets.UTF_8));
-        when(customClient.makeRequest(any(), any())).thenReturn(response);
+        when(customClient.makeGetRequest(any(), any())).thenReturn(response);
 
         //when
         String acceessKeyId = provider.getAccessKeyId();
@@ -30,7 +30,7 @@ public class InstanceCredentialsProviderTest {
 
         //then
         verify(customClient, times(1))
-                .makeRequest(eq("http://169.254.169.254/latest/meta-data/iam/security-credentials/"), any());
+                .makeGetRequest(eq("http://169.254.169.254/latest/meta-data/iam/security-credentials/"), any());
 
         assertEquals(acceessKeyId, "expected-key-id");
         assertEquals(secretKey, "expected-secret-key-value-be-here");
@@ -49,7 +49,7 @@ public class InstanceCredentialsProviderTest {
         HttpResponse goodResponse = new HttpResponse();
         goodResponse.setBody(expectedAmazonResponse().getBytes(StandardCharsets.UTF_8));
 
-        when(customClient.makeRequest(any(), any())).thenReturn(expiredResponse, goodResponse);
+        when(customClient.makeGetRequest(any(), any())).thenReturn(expiredResponse, goodResponse);
 
         //when
         String acceessKeyId = provider.getAccessKeyId();
@@ -58,7 +58,7 @@ public class InstanceCredentialsProviderTest {
 
         //then
         verify(customClient, times(2))
-                .makeRequest(eq("http://169.254.169.254/latest/meta-data/iam/security-credentials/"), any());
+                .makeGetRequest(eq("http://169.254.169.254/latest/meta-data/iam/security-credentials/"), any());
 
         // our first request returned expired response
         // imagine it happened in the past a long time ago,

@@ -26,7 +26,7 @@ public class PicoClientTest {
     public void fetches_object_data() throws IOException {
         // given
         Client client = this.buildClient();
-        when(this.httpClient.makeRequest(any(), any())).thenReturn(this.buildResponseOf("object data here"));
+        when(this.httpClient.makeGetRequest(any(), any())).thenReturn(this.buildResponseOf("object data here"));
 
         //when
         String result = client.getObjectDataAsString("my-bucket", "my-object-folder/my-object");
@@ -34,7 +34,7 @@ public class PicoClientTest {
         //then
         String expectedPath = "https://s3-elbonia-central-1.amazonaws.com/my-bucket/my-object-folder/my-object";
         Map<String, String> expectedParams = new HashMap<>();
-        verify(this.httpClient, times(1)).makeRequest(expectedPath, expectedParams);
+        verify(this.httpClient, times(1)).makeGetRequest(expectedPath, expectedParams);
 
         assertEquals(result, "object data here");
     }
@@ -45,7 +45,7 @@ public class PicoClientTest {
     public void fetches_objects_listing() throws IOException {
         // given
         Client client = this.buildClient();
-        when(this.httpClient.makeRequest(any(), any())).thenReturn(
+        when(this.httpClient.makeGetRequest(any(), any())).thenReturn(
                 this.buildResponseOfResource("s3_response_content.xml"));
 
         //when
@@ -54,7 +54,7 @@ public class PicoClientTest {
         //then
         String expectedPath = "https://s3-elbonia-central-1.amazonaws.com/my-bucket?list-type=2";
         Map<String, String> expectedParams = new HashMap<>();
-        verify(this.httpClient, times(1)).makeRequest(expectedPath, expectedParams);
+        verify(this.httpClient, times(1)).makeGetRequest(expectedPath, expectedParams);
 
         assertTrue(objectList.size() > 0);
         assertTrue(objectList.stream().anyMatch(o -> o.getKey().equals("text_data_demo.txt")));

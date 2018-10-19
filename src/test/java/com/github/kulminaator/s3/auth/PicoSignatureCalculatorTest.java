@@ -7,7 +7,7 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-public class NanoSignatureCalculatorTest {
+public class PicoSignatureCalculatorTest {
 
 
     @Test
@@ -24,7 +24,7 @@ public class NanoSignatureCalculatorTest {
         headers.put("Content-Type", Collections.singletonList("application/x-www-form-urlencoded; charset=utf-8"));
         request.setHeaders(headers);
         request.setBody(new byte[]{});
-        final NanoSignatureCalculator calculator = new NanoSignatureCalculator();
+        final PicoSignatureCalculator calculator = new PicoSignatureCalculator();
 
         //when
         final String canonicalRequest = calculator.getCanonicalRequest(request);

@@ -2,7 +2,7 @@ package com.github.kulminaator.s3.auth;
 
 import com.github.kulminaator.s3.http.HttpClient;
 import com.github.kulminaator.s3.http.HttpResponse;
-import com.github.kulminaator.s3.http.NanoHttpClient;
+import com.github.kulminaator.s3.http.PicoHttpClient;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -18,7 +18,7 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
     private ZonedDateTime expiration = null;
     private boolean loaded;
 
-    private HttpClient client = new NanoHttpClient();
+    private HttpClient client = new PicoHttpClient();
 
     public InstanceCredentialsProvider() {}
 
@@ -67,7 +67,7 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
             final String host = "http://169.254.169.254";
             final String path = "/latest/meta-data/iam/security-credentials/";
 
-            HttpResponse response = this.client.makeRequest(host + path, Collections.emptyMap());
+            HttpResponse response = this.client.makeGetRequest(host + path, Collections.emptyMap());
 
             this.parseCredentials(new String(response.getBody(), StandardCharsets.UTF_8));
         } catch (Exception exception) {

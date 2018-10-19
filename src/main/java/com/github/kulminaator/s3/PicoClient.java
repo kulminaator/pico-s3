@@ -34,7 +34,7 @@ public class PicoClient implements Client {
         /*make a url request to  https://s3-eu-west-1.amazonaws.com/bucket/?list-type=2&start-after=top */
         final Map<String, String> headers = new HashMap<>();
         final String params = "?list-type=2";
-        final HttpResponse response = httpClient.makeRequest(buildUrl(bucket, null) + params, headers);
+        final HttpResponse response = this.httpClient.makeGetRequest(buildUrl(bucket, null) + params, headers);
 
         final Document s3ListingDocument = S3XmlParser.parseS3Xml(new String(response.getBody(),
                 StandardCharsets.UTF_8));
@@ -46,14 +46,14 @@ public class PicoClient implements Client {
     @Override
     public InputStream getObjectDataAsInputStream(String bucket, String object) throws IOException {
         final Map<String, String> headers = new HashMap<>();
-        final HttpResponse response = httpClient.makeRequest(buildUrl(bucket, object), headers);
+        final HttpResponse response = this.httpClient.makeGetRequest(buildUrl(bucket, object), headers);
         return new ByteArrayInputStream(response.getBody());
     }
 
     @Override
     public String getObjectDataAsString(String bucket, String object) throws IOException {
         final Map<String, String> headers = new HashMap<>();
-        final HttpResponse response = httpClient.makeRequest(buildUrl(bucket, object), headers);
+        final HttpResponse response = this.httpClient.makeGetRequest(buildUrl(bucket, object), headers);
 
         return new String(response.getBody(), StandardCharsets.UTF_8);
     }
@@ -111,7 +111,7 @@ public class PicoClient implements Client {
         public PicoClient build() {
             final PicoClient client = new PicoClient(this.region);
             client.setHttps(this.https);
-            client.setHttpClient(httpClient);
+            client.setHttpClient(this.httpClient);
             return client;
         }
 

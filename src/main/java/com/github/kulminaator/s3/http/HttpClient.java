@@ -4,5 +4,5 @@ import java.io.IOException;
 import java.util.Map;
 
 public interface HttpClient {
-    HttpResponse makeRequest(String urlString, Map<String, String> headers) throws IOException;
+    HttpResponse makeGetRequest(String urlString, Map<String, String> headers) throws IOException;
 }

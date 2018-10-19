@@ -19,11 +19,11 @@ import java.util.TreeMap;
  *
  * Also i think amazon people are all over the place with the whole messy if-or-not-then-what-is-even-going-on-approach.
  */
-public class NanoSignatureCalculator {
+public class PicoSignatureCalculator {
 
     private Clock clock = Clock.systemUTC();
 
-    public NanoSignatureCalculator() {
+    public PicoSignatureCalculator() {
     };
 
     public void addSignatureHeaderForRequest(HttpRequest request, CredentialsProvider credentialsProvider) {

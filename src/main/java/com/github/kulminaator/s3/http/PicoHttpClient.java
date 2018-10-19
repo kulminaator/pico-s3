@@ -12,14 +12,14 @@ import java.util.Map;
 /**
  * Implementing the bare minimum to create a http client good enough to access aws s3.
  */
-public class NanoHttpClient implements HttpClient {
+public class PicoHttpClient implements HttpClient {
 
     private static final int BLOCK_SIZE = 16 * 1024;
 
-    public NanoHttpClient() {}
+    public PicoHttpClient() {}
 
     @Override
-    public HttpResponse makeRequest(final String urlString, final Map<String, String> headers) throws IOException {
+    public HttpResponse makeGetRequest(final String urlString, final Map<String, String> headers) throws IOException {
         final URL url = new URL(urlString);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         int responseCode = connection.getResponseCode();
