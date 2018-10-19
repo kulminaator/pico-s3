@@ -2,11 +2,14 @@ package com.github.kulminaator.s3.integrationtest;
 
 import com.github.kulminaator.s3.Client;
 import com.github.kulminaator.s3.PicoClient;
+import com.github.kulminaator.s3.S3Object;
 import com.github.kulminaator.s3.auth.SimpleCredentialsProvider;
 import com.github.kulminaator.s3.http.PicoHttpClient;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -76,7 +79,11 @@ public class ListAndFetchTest {
                 .withRegion("eu-west-1")
                 .withCredentialsProvider(simpleCredentialsProvider)
                 .build();
-        pClient.listObjects(this.bucketName);
+        final List<S3Object> objects = pClient.listObjects(this.bucketName);
+
+        assertTrue(objects.size() > 0);
+
+        System.out.println(objects);
     }
 
     private boolean noEnv() {

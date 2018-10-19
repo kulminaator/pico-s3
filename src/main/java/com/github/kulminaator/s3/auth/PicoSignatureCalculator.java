@@ -48,18 +48,20 @@ public class PicoSignatureCalculator {
         final String accessKey = credentialsProvider.getAccessKeyId();
         final String secretAccessKey = credentialsProvider.getSecretAccessKey();
 
-        final String scope = date + request.getRegion() + "/s3/aws4_request";
+        final String scope = date + "/" + request.getRegion() + "/s3/aws4_request";
 
         final String canonical = this.getCanonicalRequest(request);
 
-        System.out.println("*** Canonical is : \n" + canonical + "//END");
+        //System.out.println("*** Canonical is : \n" + canonical + "//END");
 
         final String stringToSign = this.getStringToSign(dateTime, scope, canonical);
 
-        final byte[] dateKey = hmacSha256("AWS4"+secretAccessKey, date);
-        final byte[] dateRegionKey = hmacSha256(dateKey, request.getRegion());
-        final byte[] dateRegionServiceKey = hmacSha256(dateRegionKey, "<aws-service>");
-        final byte[] signingKey = hmacSha256(dateRegionServiceKey, "aws4_request");
+        //System.out.println("*** <> *** String to sign : \n" + stringToSign + "//END");
+
+        final byte[] dateKey = hmacSha256(date, "AWS4"+secretAccessKey);
+        final byte[] dateRegionKey = hmacSha256(request.getRegion(), dateKey);
+        final byte[] dateRegionServiceKey = hmacSha256("s3", dateRegionKey);
+        final byte[] signingKey = hmacSha256("aws4_request", dateRegionServiceKey);
 
         final byte[] signature = hmacSha256(stringToSign.getBytes(StandardCharsets.UTF_8), signingKey);
 
@@ -118,8 +120,8 @@ public class PicoSignatureCalculator {
     }
 
 
-    private byte[] hmacSha256(byte[] data, String key) {
-        return this.hmacSha256(data, key.getBytes(StandardCharsets.UTF_8));
+    private byte[] hmacSha256(String data, byte[] key) {
+        return this.hmacSha256(data.getBytes(StandardCharsets.UTF_8), key);
     }
 
 
