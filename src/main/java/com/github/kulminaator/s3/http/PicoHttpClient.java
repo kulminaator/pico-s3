@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
 /**
@@ -15,27 +17,57 @@ import java.util.Map;
 public class PicoHttpClient implements HttpClient {
 
     private static final int BLOCK_SIZE = 16 * 1024;
+    private final boolean debug;
 
-    public PicoHttpClient() {}
+    public PicoHttpClient() {this(false);}
+
+    public PicoHttpClient(boolean debug) {
+        this.debug = true;
+    }
 
     @Override
     public HttpResponse makeGetRequest(final String urlString, final Map<String, String> headers) throws IOException {
+        // request is prepared
         final URL url = new URL(urlString);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        int responseCode = connection.getResponseCode();
-        connection.setRequestMethod("GET");
 
+        this.debug("Request to " + url.toExternalForm());
+
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
         if (headers != null) {
-            for(String key : headers.keySet()) {
+            for(final String key : headers.keySet()) {
                 connection.setRequestProperty(key, headers.get(key));
             }
         }
 
-        HttpResponse response = new HttpResponse();
+        // request is made
+        final int responseCode = connection.getResponseCode();
+
+        if (responseCode < 200 || responseCode > 299) {
+            throw new IllegalStateException("Unexpected http code " + responseCode);
+        }
+
+        final HttpResponse response = new HttpResponse();
         response.setHttpCode(connection.getResponseCode());
         response.setHeaders(connection.getHeaderFields());
 
-        InputStream input = connection.getInputStream();
+        final byte[] bytes = this.readDataToBytes(connection.getInputStream());
+        response.setBody(bytes);
+
+        this.debug("Response to " + new String(bytes));
+
+        connection.disconnect();
+
+        return response;
+    }
+
+    private void debug(String s) {
+        if (this.debug) {
+            System.out.println(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + " [PICO_HTTP] " + s);
+        }
+    }
+
+    private byte[] readDataToBytes(InputStream input) throws IOException {
         int read = 0;
         byte[] buffer = new byte[BLOCK_SIZE];
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -47,11 +79,6 @@ public class PicoHttpClient implements HttpClient {
             baos.write(buffer, 0 , read);
         }
         byte[] bytes = baos.toByteArray();
-
-        response.setBody(bytes);
-
-        connection.disconnect();
-
-        return response;
+        return bytes;
     }
 }

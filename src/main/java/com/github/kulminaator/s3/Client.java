@@ -8,6 +8,7 @@ public interface Client {
     S3Object getObject(String bucket, String object);
 
     List<S3Object> listObjects(String bucket) throws IOException;
+    List<S3Object> listObjects(String bucket, String prefix) throws IOException;
 
     InputStream getObjectDataAsInputStream(String bucket, String object) throws IOException;
 

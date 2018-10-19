@@ -25,3 +25,5 @@ hs_err_pid*
 /pico.s3.iml
 /pico-s3.iml
 /target
+
+/test_with_env.sh
