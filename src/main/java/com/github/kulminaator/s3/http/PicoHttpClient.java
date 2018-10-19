@@ -1,7 +1,5 @@
 package com.github.kulminaator.s3.http;
 
-import com.github.kulminaator.s3.http.HttpResponse;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;

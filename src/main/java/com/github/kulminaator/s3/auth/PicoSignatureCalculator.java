@@ -2,7 +2,6 @@ package com.github.kulminaator.s3.auth;
 
 import com.github.kulminaator.s3.http.HttpRequest;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -11,7 +10,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;

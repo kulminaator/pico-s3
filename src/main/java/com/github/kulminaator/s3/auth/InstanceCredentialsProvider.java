@@ -8,7 +8,6 @@ import com.github.kulminaator.s3.http.PicoHttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.ZonedDateTime;
-import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
