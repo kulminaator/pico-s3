@@ -59,11 +59,11 @@ public class PicoSignatureCalculator {
 
         final String canonical = this.getCanonicalRequest(request);
 
-        System.out.println("*** Canonical is : \n" + canonical + "//END");
+        //System.out.println("*** Canonical is : \n" + canonical + "//END");
 
         final String stringToSign = this.getStringToSign(dateTime, scope, canonical);
 
-        System.out.println("*** <> *** String to sign : \n" + stringToSign + "//END");
+        //System.out.println("*** <> *** String to sign : \n" + stringToSign + "//END");
 
         final byte[] dateKey = hmacSha256(date, "AWS4"+secretAccessKey);
         final byte[] dateRegionKey = hmacSha256(request.getRegion(), dateKey);
