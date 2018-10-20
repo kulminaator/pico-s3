@@ -31,6 +31,13 @@ public class PicoSignatureCalculator {
     public PicoSignatureCalculator() {
     }
 
+    /**
+     * Constructor used in time related unit tests only.
+     */
+    PicoSignatureCalculator(Clock presetClock) {
+        this.clock = presetClock;
+    }
+
     public void addSignatureHeaderForRequest(HttpRequest request, CredentialsProvider credentialsProvider) {
         if (credentialsProvider == null) {
             return;
@@ -181,6 +188,6 @@ public class PicoSignatureCalculator {
     }
 
     private String getFormattedDateTime(Instant instant) {
-        return instant.atZone(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmSS'Z'"));
+        return instant.atZone(ZoneId.of("UTC")).format(DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'"));
     }
 }
