@@ -29,7 +29,7 @@ public class PicoSignatureCalculator {
     private Clock clock = Clock.systemUTC();
 
     public PicoSignatureCalculator() {
-    };
+    }
 
     public void addSignatureHeaderForRequest(HttpRequest request, CredentialsProvider credentialsProvider) {
         if (credentialsProvider == null) {

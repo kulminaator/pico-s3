@@ -93,8 +93,9 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
 
     /**
      * Expects jsonData to be a simple 1 level hash map, tries to extract the data by the regular expressions.
-     * @param jsonKey
-     * @return
+     * @param jsonKey The json key to extract. This will be used raw in regex, don't put stupid things here.
+     * @param jsonData The json data to extract data from.
+     * @return The extracted data or null if not found.
      */
     private String extractSimpleJsonValue(String jsonKey, String jsonData) {
         /*
@@ -115,7 +116,7 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
                 Pattern.MULTILINE | Pattern.DOTALL);
         Matcher matcher = pattern.matcher(jsonData);
         if (matcher.matches()) {
-            return matcher.group(1).toString();
+            return matcher.group(1);
         }
         return null;
     }

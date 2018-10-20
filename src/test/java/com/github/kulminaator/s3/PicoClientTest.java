@@ -76,7 +76,7 @@ public class PicoClientTest {
         assertTrue(objectList.stream().anyMatch(o -> o.getKey().equals("binary_data_demo.png")));
 
         S3Object pngObject = objectList.stream().filter(o -> o.getKey().equals("binary_data_demo.png"))
-                .findFirst().get();
+                .findFirst().orElseThrow(() -> new IllegalStateException("expected record not found"));
 
         assertEquals(pngObject.getETag(), "\"4e4d609b8d37347fcff94f20543e1d0e\"");
         assertEquals(pngObject.getSize(), Long.valueOf(14463L));

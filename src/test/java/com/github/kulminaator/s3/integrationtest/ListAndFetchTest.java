@@ -46,7 +46,7 @@ public class ListAndFetchTest {
     @Ignore
     @Test
     public void list_folder_without_credentials() throws Exception {
-        if (!this.noEnv()) { assertTrue("Skipped", true); return;}
+        if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
                 .withRegion("eu-west-1")
@@ -56,7 +56,7 @@ public class ListAndFetchTest {
 
     @Test
     public void get_public_object_without_credentials() throws Exception {
-        if (!this.noEnv()) { assertTrue("Skipped", true); return;}
+        if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
                 .withRegion("eu-west-1")
@@ -69,7 +69,7 @@ public class ListAndFetchTest {
 
     @Test
     public void list_folder_with_simple_credentials() throws Exception {
-        if (!this.noEnv()) { assertTrue("Skipped", true); return;}
+        if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final SimpleCredentialsProvider simpleCredentialsProvider = new SimpleCredentialsProvider();
         simpleCredentialsProvider.setAccessKeyId(this.accessKeyId);
         simpleCredentialsProvider.setSecretAccessKey(this.secretAccessKeyId);
@@ -87,6 +87,6 @@ public class ListAndFetchTest {
     }
 
     private boolean noEnv() {
-        return this.hasEnv;
+        return !this.hasEnv;
     }
 }
