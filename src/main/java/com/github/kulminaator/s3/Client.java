@@ -42,11 +42,25 @@ public interface Client {
     InputStream getObjectDataAsInputStream(String bucket, String object) throws IOException;
 
     /**
-     * Assumes that object is text data and encoded as utf-8. Returns the contents as a String.
+     * Assumes that object is text data and encoded as utf-8. Returns the contents as a String. Comfortable to use
+     * in case you keep your config or template files as text based (json/yaml/ini/xml) files in S3.
      * @param bucket The bucket name.
      * @param object The object path.
      * @return Contents as a String
      * @throws IOException In case there's a communication issue with s3.
      */
     String getObjectDataAsString(String bucket, String object) throws IOException;
+
+    /**
+     * Creates the named file in the S3 with the specified Content-Type. Designed for smaller files that easily fit
+     * into your computer's memory. As data is a byte array here it cannot contain more than 2GB of data (int length
+     * would overflow).
+     *
+     * @param bucket Bucket name.
+     * @param object Object path in bucket.
+     * @param data Binary data of the file.
+     * @param contentType Content type of the file.
+     * @throws IOException In case there's a communication issue with s3.
+     */
+    void putObject(String bucket, String object, byte[] data, String contentType) throws IOException;
 }

@@ -13,14 +13,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class PicoClientTest {
 
@@ -81,6 +76,30 @@ public class PicoClientTest {
         assertEquals(pngObject.getETag(), "\"4e4d609b8d37347fcff94f20543e1d0e\"");
         assertEquals(pngObject.getSize(), Long.valueOf(14463L));
         assertEquals(pngObject.getLastModified(), "2018-09-23T10:34:17.000Z");
+    }
+
+    @Test
+    public void can_upload_files() throws Exception {
+        // given
+        Client client = this.buildClient();
+        when(this.httpClient.makeRequest(any())).thenReturn(
+                this.buildResponseOf("ok"));
+
+        //when
+        client.putObject("my-bucket", "my-object", "test-data".getBytes(StandardCharsets.UTF_8), "text/plain");
+
+        // then
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(this.httpClient, times(1)).makeRequest(captor.capture());
+
+
+        assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("https", captor.getValue().getProtocol());
+        assertEquals("/my-bucket/my-object", captor.getValue().getPath());
+        assertEquals("PUT", captor.getValue().getMethod());
+        assertEquals("text/plain", captor.getValue().getHeaders().get("Content-Type").get(0));
+        assertEquals("9", captor.getValue().getHeaders().get("Content-Length").get(0));
+        assertArrayEquals("test-data".getBytes(), captor.getValue().getBody());
     }
 
 

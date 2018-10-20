@@ -13,6 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,27 @@ public class PicoClient implements Client {
     @Override
     public String getObjectDataAsString(String bucket, String object) throws IOException {
         return new String(this.getObjectData(bucket, object), StandardCharsets.UTF_8);
+    }
+
+    @Override
+    public void putObject(String bucket, String object, byte[] data, String contentType) throws IOException {
+        final Map<String,List<String>> headers = new HashMap<>();
+
+        HttpRequest request = new HttpRequest();
+        request.setMethod("PUT");
+        request.setHeaders(headers);
+        request.setProtocol(this.getS3HttpProtocol());
+        request.setHost(this.getS3Host());
+        request.setPath(this.getS3Path(bucket, object));
+        request.setRegion(this.region);
+        request.setBody(data);
+
+        headers.put("Content-Type", Collections.singletonList(contentType));
+        headers.put("Content-Length", Collections.singletonList( String.valueOf(data.length)));
+
+        this.secureRequest(request);
+
+        this.httpClient.makeRequest(request);
     }
 
     private byte[] getObjectData(String bucket, String object) throws IOException {

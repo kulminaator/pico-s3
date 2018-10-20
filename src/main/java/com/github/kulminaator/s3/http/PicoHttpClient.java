@@ -3,6 +3,7 @@ package com.github.kulminaator.s3.http;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -48,15 +49,21 @@ public class PicoHttpClient implements HttpClient {
         }
 
         final HttpResponse response = new HttpResponse();
-        // request is made
+        // request is being made now
+        if (request.getBody().length > 0) {
+            connection.setDoOutput(true);
+            this.writeBytesToStream(request.getBody(), connection.getOutputStream());
+        }
+
         try {
             final int responseCode = connection.getResponseCode();
-        /*
-        if (responseCode < 200 || responseCode > 299) {
-            final byte[] bytes = this.readDataToBytes(connection.getInputStream());
-            this.debug(String.format("Response: '%s'", new String(bytes, StandardCharsets.UTF_8)));
-            throw new IllegalStateException("Unexpected http code " + responseCode);
-        }*/
+
+            if (responseCode < 200 || responseCode > 299) {
+                final byte[] bytes = this.readDataToBytes(connection.getInputStream());
+                this.debug(String.format("Response: '%s'", new String(bytes, StandardCharsets.UTF_8)));
+                throw new IllegalStateException("Unexpected http code " + responseCode);
+            }
+
             response.setHttpCode(responseCode);
             response.setHeaders(connection.getHeaderFields());
 
@@ -75,6 +82,14 @@ public class PicoHttpClient implements HttpClient {
 
 
         return response;
+    }
+
+    private void writeBytesToStream(byte[] body, OutputStream outputStream) throws IOException {
+        try {
+            outputStream.write(body);
+        } finally {
+            outputStream.close();
+        }
     }
 
     private Map<String, String> remapHeaders(Map<String, List<String>> headers) {

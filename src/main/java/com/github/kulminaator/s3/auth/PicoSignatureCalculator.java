@@ -2,6 +2,8 @@ package com.github.kulminaator.s3.auth;
 
 import com.github.kulminaator.s3.http.HttpRequest;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -13,8 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 /**
  * Auth header calculation class. See details from here:
@@ -59,11 +59,11 @@ public class PicoSignatureCalculator {
 
         final String canonical = this.getCanonicalRequest(request);
 
-        //System.out.println("*** Canonical is : \n" + canonical + "//END");
+        System.out.println("*** Canonical is : \n" + canonical + "//END");
 
         final String stringToSign = this.getStringToSign(dateTime, scope, canonical);
 
-        //System.out.println("*** <> *** String to sign : \n" + stringToSign + "//END");
+        System.out.println("*** <> *** String to sign : \n" + stringToSign + "//END");
 
         final byte[] dateKey = hmacSha256(date, "AWS4"+secretAccessKey);
         final byte[] dateRegionKey = hmacSha256(request.getRegion(), dateKey);
@@ -110,8 +110,13 @@ public class PicoSignatureCalculator {
     protected String getCanonicalRequest(HttpRequest request) {
         final StringBuilder builder = new StringBuilder();
         builder.append(request.getMethod()).append("\n")
-            .append(request.getPath()).append("\n")
-            .append(request.getParams()).append("\n");
+            .append(request.getPath()).append("\n");
+        if (request.getParams() != null) {
+            builder.append(request.getParams()).append("\n");
+        } else {
+            builder.append("\n");
+        }
+
         final Map<String, String> canonicalHeaders = this.getCanonicalHeaders(request);
         for (final Map.Entry<String, String> cHeader : canonicalHeaders.entrySet()) {
             builder.append(cHeader.getKey());
