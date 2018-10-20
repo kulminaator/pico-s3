@@ -30,7 +30,7 @@ public class InstanceCredentialsProviderTest {
         when(customClient.makeRequest(any())).thenReturn(response);
 
         //when
-        String acceessKeyId = provider.getAccessKeyId();
+        String accessKeyId = provider.getAccessKeyId();
         String secretKey = provider.getSecretAccessKey();
         String token = provider.getSessionToken();
 
@@ -44,7 +44,7 @@ public class InstanceCredentialsProviderTest {
         assertNull(null, captor.getValue().getParams());
 
 
-        assertEquals(acceessKeyId, "expected-key-id");
+        assertEquals(accessKeyId, "expected-key-id");
         assertEquals(secretKey, "expected-secret-key-value-be-here");
         assertEquals(token, "expected-long-long-token-text");
 
@@ -64,7 +64,7 @@ public class InstanceCredentialsProviderTest {
         when(customClient.makeRequest(any())).thenReturn(expiredResponse, goodResponse);
 
         //when
-        String acceessKeyId = provider.getAccessKeyId();
+        String accessKeyId = provider.getAccessKeyId();
         String secretKey = provider.getSecretAccessKey();
         String token = provider.getSessionToken();
 
@@ -75,7 +75,7 @@ public class InstanceCredentialsProviderTest {
         // our first request returned expired response
         // imagine it happened in the past a long time ago,
         // so yes we expect right now this value key id to be expired
-        assertEquals(acceessKeyId, "expired-access-key");
+        assertEquals(accessKeyId, "expired-access-key");
         // but the rest of the data was reloaded from an up to date body
         assertEquals(secretKey, "expected-secret-key-value-be-here");
         assertEquals(token, "expected-long-long-token-text");

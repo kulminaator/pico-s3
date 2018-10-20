@@ -68,7 +68,7 @@ public class PicoSignatureCalculatorTest {
 
     private CredentialsProvider getSimpleCredentialsProvider() {
         SimpleCredentialsProvider provider = new SimpleCredentialsProvider();
-        provider.setAccesKeyId("this is secret");
+        provider.setAccessKeyId("this is secret");
         provider.setSecretAccessKey("this is secret");
         // no token on this simple credentials set
         return provider;

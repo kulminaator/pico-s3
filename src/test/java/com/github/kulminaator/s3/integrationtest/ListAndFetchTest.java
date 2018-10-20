@@ -71,7 +71,7 @@ public class ListAndFetchTest {
     public void list_folder_with_simple_credentials() throws Exception {
         if (!this.noEnv()) { assertTrue("Skipped", true); return;}
         final SimpleCredentialsProvider simpleCredentialsProvider = new SimpleCredentialsProvider();
-        simpleCredentialsProvider.setAccesKeyId(this.accessKeyId);
+        simpleCredentialsProvider.setAccessKeyId(this.accessKeyId);
         simpleCredentialsProvider.setSecretAccessKey(this.secretAccessKeyId);
         simpleCredentialsProvider.setSessionToken(this.sessionToken);
 

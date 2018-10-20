@@ -22,7 +22,7 @@ public class PicoClient implements Client {
     private boolean https;
     private final String region;
     private HttpClient httpClient;
-    private CredentialsProvider credentialsProvier;
+    private CredentialsProvider credentialsProvider;
 
     private PicoClient(String region) {
         this.region = region;
@@ -91,7 +91,7 @@ public class PicoClient implements Client {
 
     private void secureRequest(HttpRequest request) {
         final PicoSignatureCalculator calculator = new PicoSignatureCalculator();
-        calculator.addSignatureHeaderForRequest(request, this.credentialsProvier);
+        calculator.addSignatureHeaderForRequest(request, this.credentialsProvider);
     }
 
     private String getS3Host() {
@@ -125,15 +125,15 @@ public class PicoClient implements Client {
         this.httpClient = httpClient;
     }
 
-    private void setCredentialsProvider(CredentialsProvider credentialsProvier) {
-        this.credentialsProvier = credentialsProvier;
+    private void setCredentialsProvider(CredentialsProvider credentialsProvider) {
+        this.credentialsProvider = credentialsProvider;
     }
 
     public static class Builder {
         private String region;
         private boolean https = true;
         private HttpClient httpClient = new PicoHttpClient();
-        private CredentialsProvider credentialsProvier;
+        private CredentialsProvider credentialsProvider;
 
         public Builder() {}
 
@@ -152,8 +152,8 @@ public class PicoClient implements Client {
             return this;
         }
 
-        public Builder withCredentialsProvider(CredentialsProvider credentialsProvier) {
-            this.credentialsProvier = credentialsProvier;
+        public Builder withCredentialsProvider(CredentialsProvider credentialsProvider) {
+            this.credentialsProvider = credentialsProvider;
             return this;
         }
 
@@ -166,7 +166,7 @@ public class PicoClient implements Client {
             final PicoClient client = new PicoClient(this.region);
             client.setHttps(this.https);
             client.setHttpClient(this.httpClient);
-            client.setCredentialsProvider(this.credentialsProvier);
+            client.setCredentialsProvider(this.credentialsProvider);
             return client;
         }
     }

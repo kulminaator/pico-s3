@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class InstanceCredentialsProvider implements CredentialsProvider {
-    private String accesKeyId;
+    private String accessKeyId;
     private String sessionToken;
     private String secretAccessKey;
     private ZonedDateTime expiration = null;
@@ -30,7 +30,7 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
     @Override
     public String getAccessKeyId() {
         this.assureLoaded();
-        return this.accesKeyId;
+        return this.accessKeyId;
     }
 
     @Override
@@ -64,9 +64,6 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
      */
     private void loadFromHttp() {
         try {
-            final String host = "http://169.254.169.254";
-            final String path = "/latest/meta-data/iam/security-credentials/";
-
             HttpRequest request = new HttpRequest();
             request.setProtocol("http");
             request.setHost("169.254.169.254");
@@ -81,7 +78,7 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
     }
 
     private void parseCredentials(final String responseBody) {
-        this.accesKeyId = this.extractSimpleJsonValue("AccessKeyId", responseBody);
+        this.accessKeyId = this.extractSimpleJsonValue("AccessKeyId", responseBody);
         this.secretAccessKey = this.extractSimpleJsonValue("SecretAccessKey", responseBody);
         this.sessionToken = this.extractSimpleJsonValue("Token", responseBody);
         this.expiration = this.parseDateTime(this.extractSimpleJsonValue("Expiration", responseBody));
@@ -95,7 +92,7 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
     }
 
     /**
-     * Expects jsonData to be a simple 1 level hashmap, tries to extract the data by the regular expressions.
+     * Expects jsonData to be a simple 1 level hash map, tries to extract the data by the regular expressions.
      * @param jsonKey
      * @return
      */

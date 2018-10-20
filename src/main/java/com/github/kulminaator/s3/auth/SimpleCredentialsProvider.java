@@ -1,13 +1,13 @@
 package com.github.kulminaator.s3.auth;
 
 public class SimpleCredentialsProvider implements CredentialsProvider {
-    private String accesKeyId;
+    private String accessKeyId;
     private String sessionToken;
     private String secretAccessKey;
 
     @Override
     public String getAccessKeyId() {
-        return this.accesKeyId;
+        return this.accessKeyId;
     }
 
     @Override
@@ -20,8 +20,8 @@ public class SimpleCredentialsProvider implements CredentialsProvider {
         return this.sessionToken;
     }
 
-    public void setAccesKeyId(String accesKeyId) {
-        this.accesKeyId = accesKeyId;
+    public void setAccessKeyId(String accessKeyId) {
+        this.accessKeyId = accessKeyId;
     }
 
     public void setSessionToken(String sessionToken) {

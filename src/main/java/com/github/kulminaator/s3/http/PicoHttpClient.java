@@ -86,16 +86,16 @@ public class PicoHttpClient implements HttpClient {
     }
 
     private String buildUrlString(HttpRequest request) {
-        final StringBuilder pathBuider = new StringBuilder();
-        pathBuider.append(request.getProtocol())
+        final StringBuilder pathBuilder = new StringBuilder();
+        pathBuilder.append(request.getProtocol())
                 .append("://")
                 .append(request.getHost())
                 .append(request.getPath());
         if (request.getParams() != null) {
-                pathBuider.append("?");
-                pathBuider.append(request.getParams());
+                pathBuilder.append("?");
+                pathBuilder.append(request.getParams());
         }
-        return pathBuider.toString();
+        return pathBuilder.toString();
     }
 
     private void debug(String s) {
