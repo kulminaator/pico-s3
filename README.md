@@ -10,8 +10,9 @@ and check it out, parts of it already work).
 
 * stuff that should work right now
   * authentication against amazon's systems
-  * s3 list
-  * s3 get
+  * s3 list (not yet supporting listing of very long directories, that part is in todo)
+  * s3 get object
+  * s3 put object
 
 
 ## Goals
