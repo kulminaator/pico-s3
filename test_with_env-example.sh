@@ -5,6 +5,7 @@
 # and then run with  `bash test_with_env.sh`
 
 export PICO_TEST_BUCKET="some-bucket-name"
+export PICO_TEST_PUBLIC_BUCKET="some-bucket-name"
 
 export PICO_TEST_OBJECT="some-bucket-object"
 

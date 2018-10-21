@@ -43,4 +43,30 @@ public class S3XmlParser {
         }
         return objectList;
     }
+
+    public static String getNextContinuationToken(Document s3XmlDocument) {
+        /*
+        xml section describing this looks like
+        <NextContinuationToken>14A3Bj7/8L49hvCZhqecpzT5OMIu7FwVz483Lmh3zo2HCC0JjlHwTWYZIoYV4+Ao1</NextContinuationToken>
+        <KeyCount>1000</KeyCount>
+        <MaxKeys>1000</MaxKeys>
+        <IsTruncated>true</IsTruncated>
+        */
+        final Element documentElement = s3XmlDocument.getDocumentElement();
+        final String isTruncated = getSimpleXmlItemContent(documentElement, "IsTruncated");
+        final String nextContinuationToken = getSimpleXmlItemContent(documentElement, "NextContinuationToken");
+        if (Boolean.valueOf(isTruncated).equals(true)) {
+            return nextContinuationToken;
+        }
+        return null;
+    }
+
+    private static String getSimpleXmlItemContent(Element parentElement, String item) {
+        NodeList foundElements = parentElement.getElementsByTagName(item);
+        if (foundElements.getLength() > 0) {
+            return foundElements.item(0).getTextContent();
+        }
+        return null;
+    }
+
 }

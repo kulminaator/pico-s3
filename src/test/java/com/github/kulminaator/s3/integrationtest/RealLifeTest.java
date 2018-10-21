@@ -6,7 +6,6 @@ import com.github.kulminaator.s3.S3Object;
 import com.github.kulminaator.s3.auth.SimpleCredentialsProvider;
 import com.github.kulminaator.s3.http.PicoHttpClient;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -27,6 +26,7 @@ public class RealLifeTest {
     private String secretAccessKeyId;
     private String sessionToken;
     private String testObject;
+    private String publicBucketName;
 
     @Before
     public void parseEnv() {
@@ -38,20 +38,53 @@ public class RealLifeTest {
         this.hasEnv = true;
 
         this.testObject = System.getenv("PICO_TEST_OBJECT");
+        this.publicBucketName = System.getenv("PICO_TEST_PUBLIC_BUCKET");
         this.accessKeyId = System.getenv("PICO_TEST_ACCESS_KEY");
         this.secretAccessKeyId = System.getenv("PICO_TEST_SECRET_KEY");
         this.sessionToken = System.getenv("PICO_TEST_SESSION_TOKEN");
     }
 
-    @Ignore
     @Test
-    public void list_folder_without_credentials() throws Exception {
+    public void list_big_public_folder_without_credentials() throws Exception {
         if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
                 .withRegion("eu-west-1")
                 .build();
-        pClient.listObjects(this.bucketName, "public-read-folder/");
+
+        // list the "root folder", as in no prefix
+        List<S3Object> objects = pClient.listObjects(this.publicBucketName, null);
+
+        assertTrue(objects.size() > 1200);
+    }
+
+    @Test
+    public void list_only_a_subfolder() throws Exception {
+        if (this.noEnv()) { assertTrue("Skipped", true); return;}
+        final Client pClient = new PicoClient.Builder()
+                .withHttpClient(new PicoHttpClient(true))
+                .withRegion("eu-west-1")
+                .build();
+
+        // list the "root folder", as in no prefix
+        List<S3Object> objects = pClient.listObjects(this.publicBucketName, "a-subfolder");
+
+        assertTrue(objects.size() > 1);
+        assertTrue(objects.size() < 10);
+    }
+
+    @Test
+    public void handle_files_with_unicode_names() throws Exception {
+        if (this.noEnv()) { assertTrue("Skipped", true); return;}
+        final Client pClient = new PicoClient.Builder()
+                .withHttpClient(new PicoHttpClient(true))
+                .withRegion("eu-west-1")
+                .build();
+
+        // list the "root folder", as in no prefix
+        String objectData = pClient.getObjectDataAsString(this.publicBucketName, "a-subfolder/jäääär.txt");
+
+            assertEquals("The edge of ice in estonian language is 'jäääär'.\n", objectData);
     }
 
     @Test

@@ -10,10 +10,11 @@ and check it out, parts of it already work).
 
 * stuff that should work right now
   * authentication against amazon's systems
-  * s3 list (not yet supporting listing of very long directories, that part is in todo)
+  * s3 list (including listing huge folders with concatenation)
   * s3 get object
   * s3 put object
-
+  * unicode filenames
+  * unicode file contents
 
 ## Goals
 * to support no-auth, auth with credentials, auth from instance profile
