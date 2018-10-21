@@ -33,7 +33,6 @@ public class PicoClientTest {
 
         //then
         ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
-        // Map<String, String> expectedParams = new HashMap<>();
         verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
         assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
@@ -102,7 +101,49 @@ public class PicoClientTest {
         assertArrayEquals("test-data".getBytes(), captor.getValue().getBody());
     }
 
+    @Test
+    public void can_handle_unicode_objects_for_get() throws IOException {
+        // given
+        Client client = this.buildClient();
+        when(this.httpClient.makeRequest(any())).thenReturn(this.buildResponseOf("unicode-object-content"));
 
+        //when
+        String result = client.getObjectDataAsString("my-bucket", "my-Öbject-folder/käsehauš");
+
+        //then
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(this.httpClient, times(1)).makeRequest(captor.capture());
+
+        assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("https", captor.getValue().getProtocol());
+        assertEquals("/my-bucket/my-%c3%96bject-folder/k%c3%a4sehau%c5%a1", captor.getValue().getPath());
+        assertNull(null, captor.getValue().getParams());
+
+        assertEquals("unicode-object-content", result);
+    }
+
+
+    @Test
+    public void can_handle_paginated_object_lists() throws IOException {
+        // given
+        Client client = this.buildClient();
+
+        when(this.httpClient.makeRequest(any())).thenReturn(
+                this.buildResponseOfResource("pagination_s3_response_content_truncated.xml"),
+                this.buildResponseOfResource("pagination_s3_response_content_truncated.xml"),
+                this.buildResponseOfResource("pagination_s3_response_content_final.xml")
+        );
+
+        //when
+        List<S3Object> result = client.listObjects("my-bucket", "my-object-folder/s€cret-subfolder");
+
+        //then
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(this.httpClient, times(3)).makeRequest(captor.capture());
+
+        assertEquals(result.size(), 5);
+
+    }
 
     private Client buildClient() {
         this.httpClient = mock(HttpClient.class);
@@ -120,7 +161,6 @@ public class PicoClientTest {
         response.setBody(objectData.getBytes());
         return response;
     }
-
 
     private HttpResponse buildResponseOfResource(String resourceName) throws IOException {
         final Path path = Paths.get(this.getClass().getClassLoader().getResource(resourceName).getPath());

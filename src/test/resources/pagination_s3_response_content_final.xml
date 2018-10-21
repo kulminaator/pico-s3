@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
+    <Name>example-pico-s3</Name>
+    <Prefix></Prefix>
+    <Marker></Marker>
+    <KeyCount>1</KeyCount>
+    <MaxKeys>1</MaxKeys>
+    <IsTruncated>false</IsTruncated>
+    <Contents>
+        <Key>test_ignores_this_anyway_also.png</Key>
+        <LastModified>2018-09-23T10:34:17.000Z</LastModified>
+        <ETag>&quot;4e4d609b8d37347fcff94f20543e1d0e&quot;</ETag>
+        <Size>14463</Size>
+        <StorageClass>STANDARD</StorageClass>
+    </Contents>
+</ListBucketResult>
