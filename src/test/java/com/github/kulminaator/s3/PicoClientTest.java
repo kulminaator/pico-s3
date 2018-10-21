@@ -6,12 +6,17 @@ import com.github.kulminaator.s3.http.HttpResponse;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -42,6 +47,37 @@ public class PicoClientTest {
 
 
         assertEquals("object data here", result);
+    }
+
+    @Test
+    public void fetches_object_data_as_stream() throws IOException {
+        // given
+        Client client = this.buildClient();
+        when(this.httpClient.makeRequest(any())).thenReturn(this.buildResponseOf("streamed object data here"));
+
+        //when
+        InputStream resultStream = client.getObjectDataAsInputStream("my-bucket", "my-object-folder/my-object");
+        ByteArrayOutputStream dataBuffer = new ByteArrayOutputStream();
+        int read = 0;
+        while (read >= 0) {
+            final byte[] buffer = new byte[2048];
+            read = resultStream.read(buffer);
+            if (read > -1) {
+                dataBuffer.write(buffer, 0, read);
+            }
+        }
+        String stringResult = new String(dataBuffer.toByteArray(), StandardCharsets.UTF_8);
+
+        //then
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(this.httpClient, times(1)).makeRequest(captor.capture());
+
+        assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("https", captor.getValue().getProtocol());
+        assertEquals("/my-bucket/my-object-folder/my-object", captor.getValue().getPath());
+        assertNull(null, captor.getValue().getParams());
+
+        assertEquals("streamed object data here", stringResult);
     }
 
 
@@ -114,14 +150,14 @@ public class PicoClientTest {
         ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
         verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
+        assertEquals("GET", captor.getValue().getMethod());
         assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
         assertEquals("https", captor.getValue().getProtocol());
-        assertEquals("/my-bucket/my-%c3%96bject-folder/k%c3%a4sehau%c5%a1", captor.getValue().getPath());
+        assertEquals("/my-bucket/my-%C3%96bject-folder/k%C3%A4sehau%C5%A1", captor.getValue().getPath());
         assertNull(null, captor.getValue().getParams());
 
         assertEquals("unicode-object-content", result);
     }
-
 
     @Test
     public void can_handle_paginated_object_lists() throws IOException {
@@ -141,7 +177,52 @@ public class PicoClientTest {
         ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
         verify(this.httpClient, times(3)).makeRequest(captor.capture());
 
+        List<HttpRequest> requestsMade = captor.getAllValues();
+        assertEquals("list-type=2&prefix=my-object-folder/s%E2%82%ACcret-subfolder", requestsMade.get(0).getParams());
+        assertEquals("list-type=2" +
+                "&continuation-token=14A3Bj7%2F8L49hvCZhqecpzT5OMIu7FwVz483Lmh3zo2HCC0JjlHwTWYZIoYV4%2BAo1" +
+                "&prefix=my-object-folder/s%E2%82%ACcret-subfolder", requestsMade.get(1).getParams());
+        assertEquals("list-type=2" +
+                "&continuation-token=14A3Bj7%2F8L49hvCZhqecpzT5OMIu7FwVz483Lmh3zo2HCC0JjlHwTWYZIoYV4%2BAo1" +
+                "&prefix=my-object-folder/s%E2%82%ACcret-subfolder", requestsMade.get(2).getParams());
+
         assertEquals(result.size(), 5);
+
+    }
+
+    @Test
+    public void can_fetch_object_information() throws Exception {
+        // given
+        Client client = this.buildClient();
+        HttpResponse objectInfo = new HttpResponse();
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Content-Length", Collections.singletonList("1025"));
+        headers.put("Content-Type", Collections.singletonList("application/xml"));
+        headers.put("ETag", Collections.singletonList("\"i-dont-know-why-this-is-quoted\""));
+        headers.put("Last-Modified", Collections.singletonList("Sun, 21 Oct 2018 07:39:00 GMT"));
+
+        objectInfo.setHeaders(headers);
+        objectInfo.setHttpCode(200);
+        when(this.httpClient.makeRequest(any())).thenReturn(objectInfo);
+
+        //when
+        S3Object result = client.getObject("my-bucket", "my-object");
+
+        //then
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(this.httpClient, times(1)).makeRequest(captor.capture());
+
+        HttpRequest request = captor.getValue();
+        assertEquals("HEAD", request.getMethod());
+        assertEquals("s3-elbonia-central-1.amazonaws.com", request.getHost());
+        assertEquals("https", request.getProtocol());
+        assertEquals("/my-bucket/my-object", request.getPath());
+        assertNull(null, captor.getValue().getParams());
+
+        assertEquals(Long.valueOf(1025L), result.getSize());
+        assertEquals("application/xml", result.getContentType());
+        assertEquals("my-object", result.getKey());
+        assertEquals("\"i-dont-know-why-this-is-quoted\"", result.getETag());
 
     }
 

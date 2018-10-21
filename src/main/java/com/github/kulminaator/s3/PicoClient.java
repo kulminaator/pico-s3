@@ -31,9 +31,34 @@ public class PicoClient implements Client {
     }
 
     @Override
-    public S3Object getObject(String bucket, String object) {
-        /* just request the object over https://s3-eu-west-1.amazonaws.com/bucket/object*/
-        return null;
+    public S3Object getObject(String bucket, String object) throws IOException {
+        final Map<String,List<String>> headers = new HashMap<>();
+        HttpRequest request = new HttpRequest();
+        request.setMethod("HEAD");
+        request.setHeaders(headers);
+        request.setProtocol(this.getS3HttpProtocol());
+        request.setHost(this.getS3Host());
+        request.setPath(this.getS3Path(bucket, object));
+        request.setRegion(this.region);
+
+        this.secureRequest(request);
+
+        final HttpResponse response = this.httpClient.makeRequest(request);
+        S3Object result = new S3Object();
+        result.setKey(object);
+        result.setETag(this.extractResponseHeader(response, "ETag"));
+        result.setContentType(this.extractResponseHeader(response, "Content-Type"));
+        result.setLastModified(this.extractResponseHeader(response, "Last-Modified"));
+        result.setSize(Long.valueOf(this.extractResponseHeader(response, "Content-Length")));
+        return result;
+    }
+
+    private String extractResponseHeader(HttpResponse response, String headerName) {
+        String headerValue = null;
+        if (response.getHeaders().containsKey(headerName)) {
+            headerValue = response.getHeaders().get(headerName).get(0);
+        }
+        return headerValue;
     }
 
     @Override
@@ -220,7 +245,7 @@ public class PicoClient implements Client {
             hexString.append("%");
             hexString.append(String.format("%02X", rawByte & 0XFF));
         }
-        return hexString.toString().toLowerCase();
+        return hexString.toString().toUpperCase();
     }
 
     public static class Builder {

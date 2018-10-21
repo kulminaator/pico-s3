@@ -5,6 +5,7 @@ public class S3Object {
     private String ETag;
     private Long size;
     private String lastModified;
+    private String contentType;
 
     public void setKey(String key) {
         this.key = key;
@@ -36,5 +37,17 @@ public class S3Object {
 
     public void setLastModified(String lastModified) {
         this.lastModified = lastModified;
+    }
+
+    /**
+     * Returns the content type of the object, may be null if content type is not provided by api (e.g. list objects).
+     * @return Content type of the object.
+     */
+    public String getContentType() {
+        return this.contentType;
+    }
+
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
     }
 }

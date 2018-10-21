@@ -84,7 +84,30 @@ public class RealLifeTest {
         // list the "root folder", as in no prefix
         String objectData = pClient.getObjectDataAsString(this.publicBucketName, "a-subfolder/jäääär.txt");
 
-            assertEquals("The edge of ice in estonian language is 'jäääär'.\n", objectData);
+        assertEquals("The edge of ice in estonian language is 'jäääär'.\n", objectData);
+    }
+
+    @Test
+    public void handle_file_info_requests() throws Exception {
+        if (this.noEnv()) { assertTrue("Skipped", true); return;}
+        final Client pClient = new PicoClient.Builder()
+                .withHttpClient(new PicoHttpClient(true))
+                .withRegion("eu-west-1")
+                .build();
+
+        // list the "root folder", as in no prefix
+        S3Object objectInfo = pClient.getObject(this.publicBucketName, "a-subfolder/jäääär.txt");
+
+        assertEquals(Long.valueOf(
+                "The edge of ice in estonian language is 'jäääär'.\n"
+                        .getBytes(StandardCharsets.UTF_8)
+                        .length),
+                objectInfo.getSize());
+
+        assertEquals("text/plain", objectInfo.getContentType());
+        assertFalse(objectInfo.getETag().isEmpty());
+        assertFalse(objectInfo.getLastModified().isEmpty());
+        assertEquals("a-subfolder/jäääär.txt", objectInfo.getKey());
     }
 
     @Test

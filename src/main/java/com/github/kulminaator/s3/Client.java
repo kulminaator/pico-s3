@@ -11,7 +11,7 @@ public interface Client {
      * @param object Path to the object inside the bucket.
      * @return The data describing the object (but not the contents of the object).
      */
-    S3Object getObject(String bucket, String object);
+    S3Object getObject(String bucket, String object) throws IOException;
 
     /**
      * List objects in the bucket.
