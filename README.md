@@ -54,8 +54,8 @@ Creating a simple lambda with environment credentials and measuring the cold sta
 |1536|1555|1201|3156|2826|
 |3008|1019|766|2538|2196|
 
-*Time 1 - the time from loading the lambda class until the response read from s3. True coldboot.*
-*Time 2 - the time spent in the s3 client build and reading block itself.*
+* *Time 1 - the time from loading the lambda class until the response read from s3. True coldboot.*
+* *Time 2 - the time spent in the s3 client build and reading block itself.*
 
 The sourcefiles for these tests are found compressed under the "misc" folder.
 
