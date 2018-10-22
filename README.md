@@ -33,4 +33,30 @@ whereas your vanilla lambda was starting in milliseconds before you added the aw
 I understand that aws's sdk does not shine out in a java behemoth application, but on a clean project it's just too big 
 and loads too long.
 
+## Comparison with aws s3 sdk
+Creating a simple lambda with environment credentials and measuring the cold starts (first executions) of the lambdas:
+
+### Shaded jar file sizes ###
+
+| Pico S3 (1.0-SNAPSHOT-RC2) | Aws s3 sdk (1.11.433)    |
+| ---------------------------|--------------------------|
+|Comparison: Shaded Lambda jar size| 36.19 kilobytes || 6279.73 kilobytes||
+				
+### Test, cold lambda read 1 hello world file from s3, milliseconds	###
+
+|Lambda Size in MB |Time1 Pico|Time2 Pico|Time1 AWS S3 SDK|Time2 AWS S3 SDK|
+|------------------|--------|--------|--------|--------|
+|128|11639|11218|OutOfMemoryError|OutOfMemoryError|
+|192|8710|8317|18860|18441|
+|256|7410|7040|16879|16501|
+|512|3734|3397|8538|8201|
+|1024|2560|2098|4262|3924|
+|1536|1555|1201|3156|2826|
+|3008|1019|766|2538|2196|
+
+*Time 1 - the time from loading the lambda class until the response read from s3. True coldboot.*
+*Time 2 - the time spent in the s3 client build and reading block itself.*
+
+The sourcefiles for these tests are found compressed under the "misc" folder.
+
 _Legal stuff: all the trademarks mentioned in the text above belong to their according owners._

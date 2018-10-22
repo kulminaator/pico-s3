@@ -16,6 +16,7 @@
 *.nar
 *.ear
 *.zip
+!/misc/lambda-comparison-code/test_code.zip
 *.tar.gz
 *.rar
 
