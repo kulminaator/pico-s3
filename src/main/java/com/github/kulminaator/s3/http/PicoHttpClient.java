@@ -24,7 +24,7 @@ public class PicoHttpClient implements HttpClient {
     public PicoHttpClient() {this(false);}
 
     public PicoHttpClient(boolean debug) {
-        this.debug = true;
+        this.debug = debug;
     }
 
     @Override
