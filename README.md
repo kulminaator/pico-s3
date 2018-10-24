@@ -71,9 +71,9 @@ Creating a simple lambda with environment credentials and measuring the cold sta
 
 ### Shaded jar file sizes ###
 
-| Pico S3 (1.0-SNAPSHOT-RC2) | Aws s3 sdk (1.11.433)    |
-| ---------------------------|--------------------------|
-|Comparison: Shaded Lambda jar size| 36.19 kilobytes || 6279.73 kilobytes||
+| Comparison           | Pico S3 (1.0-SNAPSHOT-RC2) | Aws s3 sdk (1.11.433)    |
+| ---------------------|----------------------------|--------------------------|
+|Shaded Lambda jar size|             36.19 kilobytes|         6279.73 kilobytes|
 				
 ### Test, cold lambda read 1 hello world file from s3, milliseconds	###
 
@@ -87,8 +87,8 @@ Creating a simple lambda with environment credentials and measuring the cold sta
 |1536|1555|1201|3156|2826|
 |3008|1019|766|2538|2196|
 
-*Time 1 - the time from loading the lambda class until the response read from s3. True coldboot.*
-*Time 2 - the time spent in the s3 client build and reading block itself.*
+* *Time 1 - the time from loading the lambda class until the response read from s3. True coldboot.*
+* *Time 2 - the time spent in the s3 client build and reading block itself.*
 
 The sourcefiles for these tests are found compressed under the "misc" folder.
 
