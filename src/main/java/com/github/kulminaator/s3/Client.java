@@ -1,6 +1,7 @@
 package com.github.kulminaator.s3;
 
-import java.io.IOException;
+import com.github.kulminaator.s3.exception.S3AccessException;
+
 import java.io.InputStream;
 import java.util.List;
 
@@ -10,16 +11,17 @@ public interface Client {
      * @param bucket Name of the bucket where the object is.
      * @param object Path to the object inside the bucket.
      * @return The data describing the object (but not the contents of the object).
+     * @throws S3AccessException In case there's a communication issue with s3.
      */
-    S3Object getObject(String bucket, String object) throws IOException;
+    S3Object getObject(String bucket, String object) throws S3AccessException;
 
     /**
      * List objects in the bucket.
      * @param bucket Name of the bucket
      * @return List of s3 objects.
-     * @throws IOException In case there's a communication issue with s3.
+     * @throws S3AccessException In case there's a communication issue with s3.
      */
-    List<S3Object> listObjects(String bucket) throws IOException;
+    List<S3Object> listObjects(String bucket) throws S3AccessException;
 
     /**
      * List objects in bucket under the prefix.
@@ -27,9 +29,9 @@ public interface Client {
      * @param bucket Name of the bucket.
      * @param prefix The prefix of all objects.
      * @return List of s3 objects.
-     * @throws IOException In case there's a communication issue with s3.
+     * @throws S3AccessException In case there's a communication issue with s3.
      */
-    List<S3Object> listObjects(String bucket, String prefix) throws IOException;
+    List<S3Object> listObjects(String bucket, String prefix) throws S3AccessException;
 
     /**
      * Fetches the object from S3, buffers it into a byte array and provides input stream to the byte array.
@@ -37,9 +39,9 @@ public interface Client {
      * @param bucket Name of the bucket.
      * @param object Name of the object.
      * @return InputStream to the raw data in bytes.
-     * @throws IOException In case there's a communication issue with s3.
+     * @throws S3AccessException In case there's a communication issue with s3.
      */
-    InputStream getObjectDataAsInputStream(String bucket, String object) throws IOException;
+    InputStream getObjectDataAsInputStream(String bucket, String object) throws S3AccessException;
 
     /**
      * Assumes that object is text data and encoded as utf-8. Returns the contents as a String. Comfortable to use
@@ -47,9 +49,9 @@ public interface Client {
      * @param bucket The bucket name.
      * @param object The object path.
      * @return Contents as a String
-     * @throws IOException In case there's a communication issue with s3.
+     * @throws S3AccessException In case there's a communication issue with s3.
      */
-    String getObjectDataAsString(String bucket, String object) throws IOException;
+    String getObjectDataAsString(String bucket, String object) throws S3AccessException;
 
     /**
      * Creates the named file in the S3 with the specified Content-Type. Designed for smaller files that easily fit
@@ -60,7 +62,7 @@ public interface Client {
      * @param object Object path in bucket.
      * @param data Binary data of the file.
      * @param contentType Content type of the file.
-     * @throws IOException In case there's a communication issue with s3.
+     * @throws S3AccessException In case there's a communication issue with s3.
      */
-    void putObject(String bucket, String object, byte[] data, String contentType) throws IOException;
+    void putObject(String bucket, String object, byte[] data, String contentType) throws S3AccessException;
 }

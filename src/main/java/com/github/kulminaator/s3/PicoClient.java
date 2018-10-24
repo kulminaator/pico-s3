@@ -2,6 +2,7 @@ package com.github.kulminaator.s3;
 
 import com.github.kulminaator.s3.auth.CredentialsProvider;
 import com.github.kulminaator.s3.auth.PicoSignatureCalculator;
+import com.github.kulminaator.s3.exception.S3AccessException;
 import com.github.kulminaator.s3.http.HttpClient;
 import com.github.kulminaator.s3.http.HttpRequest;
 import com.github.kulminaator.s3.http.HttpResponse;
@@ -31,7 +32,7 @@ public class PicoClient implements Client {
     }
 
     @Override
-    public S3Object getObject(String bucket, String object) throws IOException {
+    public S3Object getObject(String bucket, String object) throws S3AccessException {
         final Map<String,List<String>> headers = new HashMap<>();
         HttpRequest request = new HttpRequest();
         request.setMethod("HEAD");
@@ -43,7 +44,7 @@ public class PicoClient implements Client {
 
         this.secureRequest(request);
 
-        final HttpResponse response = this.httpClient.makeRequest(request);
+        final HttpResponse response = this.makeRequest(request);
         S3Object result = new S3Object();
         result.setKey(object);
         result.setETag(this.extractResponseHeader(response, "ETag"));
@@ -51,6 +52,14 @@ public class PicoClient implements Client {
         result.setLastModified(this.extractResponseHeader(response, "Last-Modified"));
         result.setSize(Long.valueOf(this.extractResponseHeader(response, "Content-Length")));
         return result;
+    }
+
+    private HttpResponse makeRequest(final HttpRequest httpRequest) throws S3AccessException {
+        try {
+            return this.httpClient.makeRequest(httpRequest);
+        } catch (final IOException ioException) {
+            throw new S3AccessException(ioException);
+        }
     }
 
     private String extractResponseHeader(HttpResponse response, String headerName) {
@@ -62,12 +71,12 @@ public class PicoClient implements Client {
     }
 
     @Override
-    public List<S3Object> listObjects(String bucket) throws IOException {
+    public List<S3Object> listObjects(String bucket) throws S3AccessException {
         return this.listObjects(bucket, null);
     }
 
     @Override
-    public List<S3Object> listObjects(String bucket, String prefix) throws IOException {
+    public List<S3Object> listObjects(String bucket, String prefix) throws S3AccessException {
         /*make a url request to  https://s3-eu-west-1.amazonaws.com/bucket/?list-type=2&start-after=prefix */
         final Map<String,List<String>> headers = new HashMap<>();
         final String params = "list-type=2";
@@ -100,7 +109,7 @@ public class PicoClient implements Client {
 
             this.secureRequest(request);
 
-            final HttpResponse response = this.httpClient.makeRequest(request);
+            final HttpResponse response = this.makeRequest(request);
 
             final Document s3ListingDocument = S3XmlParser.parseS3Xml(new String(response.getBody(),
                     StandardCharsets.UTF_8));
@@ -116,17 +125,17 @@ public class PicoClient implements Client {
     }
 
     @Override
-    public InputStream getObjectDataAsInputStream(String bucket, String object) throws IOException {
+    public InputStream getObjectDataAsInputStream(String bucket, String object) throws S3AccessException {
         return new ByteArrayInputStream(this.getObjectData(bucket, object));
     }
 
     @Override
-    public String getObjectDataAsString(String bucket, String object) throws IOException {
+    public String getObjectDataAsString(String bucket, String object) throws S3AccessException {
         return new String(this.getObjectData(bucket, object), StandardCharsets.UTF_8);
     }
 
     @Override
-    public void putObject(String bucket, String object, byte[] data, String contentType) throws IOException {
+    public void putObject(String bucket, String object, byte[] data, String contentType) throws S3AccessException {
         final Map<String,List<String>> headers = new HashMap<>();
 
         HttpRequest request = new HttpRequest();
@@ -143,10 +152,10 @@ public class PicoClient implements Client {
 
         this.secureRequest(request);
 
-        this.httpClient.makeRequest(request);
+        this.makeRequest(request);
     }
 
-    private byte[] getObjectData(String bucket, String object) throws IOException {
+    private byte[] getObjectData(String bucket, String object) throws S3AccessException {
         final Map<String,List<String>> headers = new HashMap<>();
         HttpRequest request = new HttpRequest();
         request.setHeaders(headers);
@@ -157,7 +166,7 @@ public class PicoClient implements Client {
 
         this.secureRequest(request);
 
-        final HttpResponse response = this.httpClient.makeRequest(request);
+        final HttpResponse response = this.makeRequest(request);
         return response.getBody();
     }
 

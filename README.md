@@ -21,7 +21,40 @@ and check it out, parts of it already work).
 * to support list, get and put commands
 * anything else will be optional (but not off limits)
 
+## Usage example
+Listing two example cases below with different auth types:
+```java
+import com.github.kulminaator.s3.Client;
+import com.github.kulminaator.s3.PicoClient;
+import com.github.kulminaator.s3.S3Object;
+import com.github.kulminaator.s3.auth.EnvironmentCredentialsProvider;
+import com.github.kulminaator.s3.auth.SimpleCredentialsProvider;
 
+import java.util.List;
+
+class Foo {
+    /* List objects by using aws credentials from environment parameters */
+    public List<S3Object> listObjectsWithEnvCredentials(String bucketName) {
+        final Client pClient = new PicoClient.Builder()
+                .withRegion("eu-west-1")
+                .withCredentialsProvider(new EnvironmentCredentialsProvider())
+                .build();
+        return pClient.listObjects(bucketName);
+    }
+
+    /* Get an object data as just a string by using aws credentials from method parameters */
+    public String getObject(String bucketName, String objectName, String accessKey, String secretKey) {
+        SimpleCredentialsProvider simpleCredentialsProvider = new SimpleCredentialsProvider();
+        simpleCredentialsProvider.setAccessKeyId(accessKey);
+        simpleCredentialsProvider.setSecretAccessKey(secretKey);
+        final Client pClient = new PicoClient.Builder()
+                .withRegion("eu-west-1")
+                .withCredentialsProvider(simpleCredentialsProvider)
+                .build();
+        return pClient.getObjectDataAsString(bucketName, objectName);
+    }
+}
+```
 
 ## Motivation
 My main motivation to create this is the absurd size of amazon's s3 library if you include it's dependencies. If you 
