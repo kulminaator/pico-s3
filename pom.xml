@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.github.kulminaator</groupId>
   <artifactId>pico-s3</artifactId>
-  <version>1.1-SNAPSHOT</version>
+  <version>1.1-rc1</version>
 
   <name>pico-s3</name>
   <!-- FIXME change it to the project's website -->
@@ -16,7 +15,7 @@
     <url>https://github.com/kulminaator/pico-s3</url>
     <connection>scm:git:ssh://git@github.com/kulminaator/pico-s3.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/kulminaator/pico-s3.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>pico-s3-1.1-rc1</tag>
   </scm>
 
   <properties>
