@@ -6,7 +6,7 @@
 
   <groupId>com.github.kulminaator</groupId>
   <artifactId>pico-s3</artifactId>
-  <version>1.0</version>
+  <version>1.1-SNAPSHOT</version>
 
   <name>pico-s3</name>
   <!-- FIXME change it to the project's website -->
@@ -35,10 +35,10 @@
   </dependencies>
 
   <build>
+    <!--
     <finalName>${project.artifactId}-${project.version}</finalName>
-    <!-- 
-	 <finalName>${project.artifactId}-${project.version}-${maven.build.timestamp}</finalName>
-    -->
+    -->    
+    <finalName>${project.artifactId}-${project.version}-${maven.build.timestamp}</finalName>
   </build>
 
 </project>
