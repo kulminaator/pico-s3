@@ -4,8 +4,8 @@
 * uses Java Standard Edition's http client, xml parser and cryptography support
 * will do my best to keep this tiny, right now the jar file is less than 30kb, i will try to keep it under 100kb feature complete
 
-## This is still work in progress, right now in alpha quality levels, don't use yet in your production system.
-* will let you know once it's properly running and good enough for even beta use (you're welcome to read the source
+## This is still work in progress, right now in beta quality levels, use with caution and lots of testing.
+* will let you know once it's properly running and good enough for stable use (you're welcome to read the source
 and check it out, parts of it already work).
 
 * stuff that should work right now
