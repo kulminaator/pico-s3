@@ -6,7 +6,7 @@
 
   <groupId>com.github.kulminaator</groupId>
   <artifactId>pico-s3</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
 
   <name>pico-s3</name>
   <!-- FIXME change it to the project's website -->
