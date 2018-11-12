@@ -10,7 +10,14 @@
 
   <name>pico-s3</name>
   <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <url>https://github.com/kulminaator/pico-s3</url>
+
+  <scm>
+    <url>https://github.com/kulminaator/pico-s3</url>
+    <connection>scm:git:ssh://git@github.com/kulminaator/pico-s3.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/kulminaator/pico-s3.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
