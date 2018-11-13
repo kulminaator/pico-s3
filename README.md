@@ -56,6 +56,22 @@ class Foo {
 }
 ```
 
+## Including into your project
+After adding jcenter / bintray to your repositories list you can just include it like this in gradle
+```gradle
+compile 'com.github.kulminaator:pico-s3:1.1'
+```
+Or like this in maven
+```xml
+<dependency>
+  <groupId>com.github.kulminaator</groupId>
+  <artifactId>pico-s3</artifactId>
+  <version>1.1</version>
+  <type>pom</type>
+</dependency>
+```
+Check for the latest version at https://bintray.com/kulminaator/kulminaator/pico-s3
+
 ## Motivation
 My main motivation to create this is the absurd size of amazon's s3 library if you include it's dependencies. If you 
 have a vanilla project and you pull it in you're punished with 4-5 megabytes of dependencies. If your project is an aws 
