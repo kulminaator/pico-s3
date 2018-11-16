@@ -1,6 +1,7 @@
 package com.github.kulminaator.s3.auth;
 
 import com.github.kulminaator.s3.http.HttpRequest;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.time.Clock;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class PicoSignatureCalculatorTest {
@@ -77,6 +79,44 @@ public class PicoSignatureCalculatorTest {
                 "Signature=37e0b9723178cac53737200f71fe889e5f6fe8e3e76fb857fa0a775fe212e563";
 
         assertEquals(expected, request.getHeaders().get("Authorization").get(0));
+    }
+
+    @Ignore
+    @Test
+    public void signing_performance_test() {
+        // do 10 000 signatures, see how much time did we use.
+
+        //given
+        Clock clock = Clock.fixed(Instant.parse("2018-09-08T01:02:03Z"), ZoneOffset.UTC);
+        final PicoSignatureCalculator calculator = new PicoSignatureCalculator(clock);
+        final HttpRequest request = new HttpRequest();
+        request.setHost("examplebucket.s3.amazonaws.com");
+        request.setRegion("us-east-1");
+        request.setPath("");
+        request.setParams("?lifecycle");
+        request.setMethod("GET");
+        request.setProtocol("https");
+        final CredentialsProvider credentialsProvider = this.getSimpleCredentialsProvider();
+
+        // when
+        // the performing loop itself
+        // on my core i7 this completes in 10 seconds, which makes signature calculation cost 0.1ms, without any caching
+        // of signing keys. this is good enough for now :)
+        long start = System.currentTimeMillis();
+        for (int i = 0 ; i < 100_000; i++) {
+            request.setHeader("Serial", "" + i);
+            calculator.addSignatureHeaderForRequest(request, credentialsProvider);
+        }
+        long end = System.currentTimeMillis();
+
+        //then
+        System.out.println("Tests took " +  (end - start) + "ms");
+
+        String expected = "AWS4-HMAC-SHA256 Credential=this is secret/20180908/us-east-1/s3/aws4_request," +
+                "SignedHeaders=host;x-amz-content-sha256;x-amz-date," +
+                "Signature=37e0b9723178cac53737200f71fe889e5f6fe8e3e76fb857fa0a775fe212e563";
+
+        assertNotNull(request.getHeaders().get("Authorization").get(0));
     }
 
 
