@@ -38,6 +38,8 @@ public class PicoHttpClient implements HttpClient {
         this.debug(() -> "Request to " + url.toExternalForm());
 
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setConnectTimeout(request.getConnectTimeout());
+        connection.setReadTimeout(request.getReadTimeout());
         connection.setRequestMethod(request.getMethod());
         this.debug(() -> "Sending headers" + headers);
 

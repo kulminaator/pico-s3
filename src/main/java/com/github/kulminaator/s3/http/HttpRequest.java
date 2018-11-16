@@ -14,6 +14,8 @@ public class HttpRequest {
     private byte[] body = new byte[0];
     private Map<String, List<String>> headers = new HashMap<>();
     private String region;
+    private int connectTimeout;
+    private int readTimeout;
 
     public HttpRequest() {
     }
@@ -89,5 +91,21 @@ public class HttpRequest {
      */
     public void setHeader(String key, String value) {
         this.headers.put(key, Collections.singletonList(value));
+    }
+
+    public int getConnectTimeout() {
+        return this.connectTimeout;
+    }
+
+    public void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
+    }
+
+    public int getReadTimeout() {
+        return this.readTimeout;
+    }
+
+    public void setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
     }
 }

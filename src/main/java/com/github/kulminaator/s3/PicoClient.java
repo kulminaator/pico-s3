@@ -22,10 +22,15 @@ import java.util.Map;
 
 public class PicoClient implements Client {
 
+    public static final int DEFAULT_CONNECT_TIMEOUT = 60_000;
+    public static final int DEFAULT_READ_TIMEOUT = 60_000;
+
     private boolean https;
     private final String region;
     private HttpClient httpClient;
     private CredentialsProvider credentialsProvider;
+    private int connectTimeout;
+    private int readTimeout;
 
     private PicoClient(String region) {
         this.region = region;
@@ -34,24 +39,30 @@ public class PicoClient implements Client {
     @Override
     public S3Object getObject(String bucket, String object) throws S3AccessException {
         final Map<String,List<String>> headers = new HashMap<>();
-        HttpRequest request = new HttpRequest();
-        request.setMethod("HEAD");
+        final HttpRequest request = this.buildRequestBase("HEAD");
         request.setHeaders(headers);
-        request.setProtocol(this.getS3HttpProtocol());
-        request.setHost(this.getS3Host());
         request.setPath(this.getS3Path(bucket, object));
-        request.setRegion(this.region);
-
         this.secureRequest(request);
 
         final HttpResponse response = this.makeRequest(request);
-        S3Object result = new S3Object();
+        final S3Object result = new S3Object();
         result.setKey(object);
         result.setETag(this.extractResponseHeader(response, "ETag"));
         result.setContentType(this.extractResponseHeader(response, "Content-Type"));
         result.setLastModified(this.extractResponseHeader(response, "Last-Modified"));
         result.setSize(Long.valueOf(this.extractResponseHeader(response, "Content-Length")));
         return result;
+    }
+
+    private HttpRequest buildRequestBase(String method) {
+        final HttpRequest request = new HttpRequest();
+        request.setMethod(method);
+        request.setProtocol(this.getS3HttpProtocol());
+        request.setHost(this.getS3Host());
+        request.setRegion(this.region);
+        request.setConnectTimeout(this.connectTimeout);
+        request.setReadTimeout(this.readTimeout);
+        return request;
     }
 
     private HttpResponse makeRequest(final HttpRequest httpRequest) throws S3AccessException {
@@ -98,14 +109,10 @@ public class PicoClient implements Client {
                 paramsBuilder.append("&prefix=");
                 paramsBuilder.append(uriEncode(prefix, false));
             }
-
-            HttpRequest request = new HttpRequest();
+            final HttpRequest request = this.buildRequestBase("GET");
             request.setHeaders(headers);
-            request.setProtocol(this.getS3HttpProtocol());
-            request.setHost(this.getS3Host());
             request.setPath(this.getS3Path(bucket, null));
             request.setParams(paramsBuilder.toString());
-            request.setRegion(this.region);
 
             this.secureRequest(request);
 
@@ -138,13 +145,9 @@ public class PicoClient implements Client {
     public void putObject(String bucket, String object, byte[] data, String contentType) throws S3AccessException {
         final Map<String,List<String>> headers = new HashMap<>();
 
-        HttpRequest request = new HttpRequest();
-        request.setMethod("PUT");
+        final HttpRequest request = this.buildRequestBase("PUT");
         request.setHeaders(headers);
-        request.setProtocol(this.getS3HttpProtocol());
-        request.setHost(this.getS3Host());
         request.setPath(this.getS3Path(bucket, object));
-        request.setRegion(this.region);
         request.setBody(data);
 
         headers.put("Content-Type", Collections.singletonList(contentType));
@@ -157,15 +160,10 @@ public class PicoClient implements Client {
 
     private byte[] getObjectData(String bucket, String object) throws S3AccessException {
         final Map<String,List<String>> headers = new HashMap<>();
-        HttpRequest request = new HttpRequest();
+        final HttpRequest request = this.buildRequestBase("GET");
         request.setHeaders(headers);
-        request.setProtocol(this.getS3HttpProtocol());
-        request.setHost(this.getS3Host());
         request.setPath(this.getS3Path(bucket, object));
-        request.setRegion(this.region);
-
         this.secureRequest(request);
-
         final HttpResponse response = this.makeRequest(request);
         return response.getBody();
     }
@@ -210,6 +208,13 @@ public class PicoClient implements Client {
         this.credentialsProvider = credentialsProvider;
     }
 
+    private void setConnectTimeout(int connectTimeout) {
+        this.connectTimeout = connectTimeout;
+    }
+
+    private void setReadTimeout(int readTimeout) {
+        this.readTimeout = readTimeout;
+    }
 
     /**
      * Encodes uri components for http safety, also encodes slashes.
@@ -258,10 +263,13 @@ public class PicoClient implements Client {
     }
 
     public static class Builder {
+
         private String region;
         private boolean https = true;
         private HttpClient httpClient = new PicoHttpClient();
         private CredentialsProvider credentialsProvider;
+        private int connectTimeout = DEFAULT_CONNECT_TIMEOUT;
+        private int readTimeout = DEFAULT_READ_TIMEOUT;
 
         public Builder() {}
 
@@ -290,13 +298,35 @@ public class PicoClient implements Client {
             return this;
         }
 
+
+        /**
+         * Defines the timeout of connect operation in milliseconds.
+         * @param connectTimeout The timeout in milliseconds.
+         * @return The builder.
+         */
+        public Builder withConnectTimeout(int connectTimeout) {
+            this.connectTimeout = connectTimeout;
+            return this;
+        }
+
+        /**
+         * Defines the timeout of read operation in milliseconds.
+         * @param readTimeout The timeout in milliseconds.
+         * @return The builder.
+         */
+        public Builder withReadTimeout(int readTimeout) {
+            this.readTimeout = readTimeout;
+            return this;
+        }
+
         public PicoClient build() {
             final PicoClient client = new PicoClient(this.region);
             client.setHttps(this.https);
             client.setHttpClient(this.httpClient);
             client.setCredentialsProvider(this.credentialsProvider);
+            client.setConnectTimeout(this.connectTimeout);
+            client.setReadTimeout(this.readTimeout);
             return client;
         }
     }
-
 }

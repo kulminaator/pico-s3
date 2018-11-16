@@ -51,8 +51,11 @@ public class PicoClientTest {
 
     @Test
     public void fetches_object_data_as_stream() throws IOException {
+        final int connectTimeout = 25;
+        final int readTimeout = 55;
+
         // given
-        Client client = this.buildClient();
+        Client client = this.buildClient(connectTimeout, readTimeout);
         when(this.httpClient.makeRequest(any())).thenReturn(this.buildResponseOf("streamed object data here"));
 
         //when
@@ -77,6 +80,9 @@ public class PicoClientTest {
         assertEquals("/my-bucket/my-object-folder/my-object", captor.getValue().getPath());
         assertNull(null, captor.getValue().getParams());
 
+        assertEquals(connectTimeout, captor.getValue().getConnectTimeout());
+        assertEquals(readTimeout, captor.getValue().getReadTimeout());
+
         assertEquals("streamed object data here", stringResult);
     }
 
@@ -99,7 +105,9 @@ public class PicoClientTest {
         assertEquals("https", captor.getValue().getProtocol());
         assertEquals("/my-bucket", captor.getValue().getPath());
         assertEquals("list-type=2", captor.getValue().getParams());
-
+        assertEquals("GET", captor.getValue().getMethod());
+        assertEquals(PicoClient.DEFAULT_CONNECT_TIMEOUT, captor.getValue().getConnectTimeout());
+        assertEquals(PicoClient.DEFAULT_READ_TIMEOUT, captor.getValue().getReadTimeout());
 
         assertTrue(objectList.size() > 0);
         assertTrue(objectList.stream().anyMatch(o -> o.getKey().equals("text_data_demo.txt")));
@@ -233,6 +241,20 @@ public class PicoClientTest {
                 .withHttps()
                 .withRegion("elbonia-central-1")
                 .withHttpClient(this.httpClient)
+                .build();
+        return picoClient;
+    }
+
+
+    private Client buildClient(int connectTimeout, int readTimeout) {
+        this.httpClient = mock(HttpClient.class);
+
+        final Client picoClient = new PicoClient.Builder()
+                .withHttps()
+                .withRegion("elbonia-central-1")
+                .withHttpClient(this.httpClient)
+                .withConnectTimeout(connectTimeout)
+                .withReadTimeout(readTimeout)
                 .build();
         return picoClient;
     }
