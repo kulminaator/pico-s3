@@ -8,6 +8,7 @@ import com.github.kulminaator.s3.http.PicoHttpClient;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -56,6 +57,28 @@ public class RealLifeTest {
         List<S3Object> objects = pClient.listObjects(this.publicBucketName, null);
 
         assertTrue(objects.size() > 1200);
+    }
+
+    @Test
+    public void list_will_time_out() throws Exception {
+        if (this.noEnv()) { assertTrue("Skipped", true); return;}
+        final Client pClient = new PicoClient.Builder()
+                .withHttpClient(new PicoHttpClient(true))
+                .withRegion("eu-west-1")
+                .withReadTimeout(1)
+                .withConnectTimeout(1)
+                .build();
+
+        // list the "root folder", as in no prefix, will time out due to absurd timeout values
+        Exception thrown = null;
+        try {
+           pClient.listObjects(this.publicBucketName, null);
+        } catch (Exception e) {
+            thrown = e;
+        }
+        assertNotNull(thrown);
+        assertEquals(SocketTimeoutException.class, thrown.getCause().getClass());
+        assertTrue(thrown.getCause().getMessage().contains("timed out"));
     }
 
     @Test

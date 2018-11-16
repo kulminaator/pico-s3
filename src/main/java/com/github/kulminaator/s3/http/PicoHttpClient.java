@@ -71,13 +71,12 @@ public class PicoHttpClient implements HttpClient {
 
             final byte[] bytes = this.readDataToBytes(connection.getInputStream());
             response.setBody(bytes);
-
             this.debug(() -> "Response to " + new String(bytes));
-
         } catch (IOException exception) {
             final byte[] bytes = this.readDataToBytes(connection.getErrorStream());
             this.debug(() -> String.format("Response: '%s'", new String(bytes, StandardCharsets.UTF_8)));
-            throw new IllegalStateException("Unexpected http response " + new String(bytes), exception);
+            throw new IllegalStateException("Unexpected http result (" +
+                    exception.getMessage() + ") with response body '" + new String(bytes) + "'", exception);
         } finally {
             connection.disconnect();
         }
@@ -126,7 +125,7 @@ public class PicoHttpClient implements HttpClient {
         int read = 0;
         byte[] buffer = new byte[BLOCK_SIZE];
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        while (true) {
+        while (input != null) {
             read = input.read(buffer);
             if (read < 0) {
                 break;
