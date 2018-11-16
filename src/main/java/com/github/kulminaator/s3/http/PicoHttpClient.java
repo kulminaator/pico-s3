@@ -35,16 +35,16 @@ public class PicoHttpClient implements HttpClient {
         // request is prepared
         final URL url = new URL(urlString);
 
-        this.debug("Request to " + url.toExternalForm());
+        this.debug(() -> "Request to " + url.toExternalForm());
 
         final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod(request.getMethod());
-        this.debug("Sending headers" + headers);
+        this.debug(() -> "Sending headers" + headers);
 
         if (headers != null) {
             for(final String key : headers.keySet()) {
                 connection.setRequestProperty(key, headers.get(key));
-                this.debug("Header " + key + ": " + headers.get(key));
+                this.debug(() -> "Header " + key + ": " + headers.get(key));
             }
         }
 
@@ -60,7 +60,7 @@ public class PicoHttpClient implements HttpClient {
 
             if (responseCode < 200 || responseCode > 299) {
                 final byte[] bytes = this.readDataToBytes(connection.getInputStream());
-                this.debug(String.format("Response: '%s'", new String(bytes, StandardCharsets.UTF_8)));
+                this.debug(() -> String.format("Response: '%s'", new String(bytes, StandardCharsets.UTF_8)));
                 throw new IllegalStateException("Unexpected http code " + responseCode);
             }
 
@@ -70,11 +70,11 @@ public class PicoHttpClient implements HttpClient {
             final byte[] bytes = this.readDataToBytes(connection.getInputStream());
             response.setBody(bytes);
 
-            this.debug("Response to " + new String(bytes));
+            this.debug(() -> "Response to " + new String(bytes));
 
         } catch (IOException exception) {
             final byte[] bytes = this.readDataToBytes(connection.getErrorStream());
-            this.debug(String.format("Response: '%s'", new String(bytes, StandardCharsets.UTF_8)));
+            this.debug(() -> String.format("Response: '%s'", new String(bytes, StandardCharsets.UTF_8)));
             throw new IllegalStateException("Unexpected http response " + new String(bytes), exception);
         } finally {
             connection.disconnect();
@@ -113,9 +113,10 @@ public class PicoHttpClient implements HttpClient {
         return pathBuilder.toString();
     }
 
-    private void debug(String s) {
+    private void debug(java.util.function.Supplier<String> debugMessageProvider) {
         if (this.debug) {
-            System.out.println(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now()) + " [PICO_HTTP] " + s);
+            System.out.println(DateTimeFormatter.ISO_DATE_TIME.format(LocalDateTime.now())
+                    + " [PICO_HTTP] " + debugMessageProvider.get());
         }
     }
 
