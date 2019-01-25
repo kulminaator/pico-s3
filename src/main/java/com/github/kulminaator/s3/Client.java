@@ -1,6 +1,7 @@
 package com.github.kulminaator.s3;
 
 import com.github.kulminaator.s3.exception.S3AccessException;
+import com.github.kulminaator.s3.options.PutObjectOptions;
 
 import java.io.InputStream;
 import java.util.List;
@@ -65,4 +66,17 @@ public interface Client {
      * @throws S3AccessException In case there's a communication issue with s3.
      */
     void putObject(String bucket, String object, byte[] data, String contentType) throws S3AccessException;
+
+    /**
+     * Creates the named file in the S3 with the specified Content-Type. Designed for smaller files that easily fit
+     * into your computer's memory. As data is a byte array here it cannot contain more than 2GB of data (int length
+     * would overflow).
+     *
+     * @param bucket Bucket name.
+     * @param object Object path in bucket.
+     * @param data Binary data of the file.
+     * @param options Specific s3 object options.
+     * @throws S3AccessException In case there's a communication issue with s3.
+     */
+    void putObject(String bucket, String object, byte[] data, PutObjectOptions options) throws S3AccessException;
 }

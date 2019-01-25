@@ -5,6 +5,7 @@ import com.github.kulminaator.s3.PicoClient;
 import com.github.kulminaator.s3.S3Object;
 import com.github.kulminaator.s3.auth.SimpleCredentialsProvider;
 import com.github.kulminaator.s3.http.PicoHttpClient;
+import com.github.kulminaator.s3.options.PutObjectOptions;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -169,6 +170,41 @@ public class RealLifeTest {
         String returnedData = pClient.getObjectDataAsString(this.bucketName, "put-test/uploaded-by-test.xml");
 
         assertArrayEquals(randomData, returnedData.getBytes(StandardCharsets.UTF_8));
+    }
+
+
+    @Test
+    public void put_object_with_simple_credentials_and_crypto() throws Exception {
+        if (this.noEnv()) { assertTrue("Skipped", true); return;}
+
+        final SimpleCredentialsProvider simpleCredentialsProvider = new SimpleCredentialsProvider();
+        simpleCredentialsProvider.setAccessKeyId(this.accessKeyId);
+        simpleCredentialsProvider.setSecretAccessKey(this.secretAccessKeyId);
+        simpleCredentialsProvider.setSessionToken(this.sessionToken);
+
+        final Client pClient = new PicoClient.Builder()
+                .withHttpClient(new PicoHttpClient(true))
+                .withCredentialsProvider(simpleCredentialsProvider)
+                .withRegion("eu-west-1")
+                .build();
+
+        byte[] randomData = this.buildRandomXmlData();
+
+        PutObjectOptions options = new PutObjectOptions.Builder()
+                .withContentType("application/xml")
+                .withServerSideEncryption(PutObjectOptions.Builder.SERVER_SIDE_ENCRYPTION_S3)
+                .build();
+
+        pClient.putObject(this.bucketName, "put-test/uploaded-by-test-encrypted.xml", randomData, options);
+        // give aws some time to replicate our magnificent data.
+        Thread.sleep(5000);
+        String returnedData = pClient.getObjectDataAsString(this.bucketName, "put-test/uploaded-by-test-encrypted.xml");
+
+        assertArrayEquals(randomData, returnedData.getBytes(StandardCharsets.UTF_8));
+
+        S3Object objectData = pClient.getObject(this.bucketName, "put-test/uploaded-by-test-encrypted.xml");
+
+        assertEquals("AES256", objectData.getServerSideEncrpytion());
     }
 
     private byte[] buildRandomXmlData() {

@@ -3,6 +3,7 @@ package com.github.kulminaator.s3;
 import com.github.kulminaator.s3.http.HttpClient;
 import com.github.kulminaator.s3.http.HttpRequest;
 import com.github.kulminaator.s3.http.HttpResponse;
+import com.github.kulminaator.s3.options.PutObjectOptions;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -144,6 +145,72 @@ public class PicoClientTest {
         assertEquals("9", captor.getValue().getHeaders().get("Content-Length").get(0));
         assertArrayEquals("test-data".getBytes(), captor.getValue().getBody());
     }
+
+    @Test
+    public void can_upload_sse_encrypted_files() throws Exception {
+        // given
+        Client client = this.buildClient();
+        when(this.httpClient.makeRequest(any())).thenReturn(
+                this.buildResponseOf("ok"));
+
+        //when
+        PutObjectOptions options = new PutObjectOptions.Builder()
+                .withContentType("text/html")
+                .withServerSideEncryption(PutObjectOptions.Builder.SERVER_SIDE_ENCRYPTION_S3)
+                .build();
+        client.putObject("my-bucket", "my-object", "test-data".getBytes(StandardCharsets.UTF_8), options);
+
+        // then
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(this.httpClient, times(1)).makeRequest(captor.capture());
+
+
+        assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("https", captor.getValue().getProtocol());
+        assertEquals("/my-bucket/my-object", captor.getValue().getPath());
+        assertEquals("PUT", captor.getValue().getMethod());
+        assertEquals("text/html", captor.getValue().getHeaders().get("Content-Type").get(0));
+        assertEquals("9", captor.getValue().getHeaders().get("Content-Length").get(0));
+
+
+        assertEquals("AES256", captor.getValue().getHeaders().get("x-amz-server-side-encryption").get(0));
+
+        assertArrayEquals("test-data".getBytes(), captor.getValue().getBody());
+    }
+
+    @Test
+    public void can_upload_sse_kms_encrypted_files() throws Exception {
+        // given
+        Client client = this.buildClient();
+        when(this.httpClient.makeRequest(any())).thenReturn(
+                this.buildResponseOf("ok"));
+
+        //when
+        PutObjectOptions options = new PutObjectOptions.Builder()
+                .withContentType("text/html")
+                .withServerSideEncryption(PutObjectOptions.Builder.SERVER_SIDE_ENCRYPTION_KMS)
+                .withServerSideEncryptionKeyId("abc-123")
+                .build();
+        client.putObject("my-bucket", "my-object", "test-data".getBytes(StandardCharsets.UTF_8), options);
+
+        // then
+        ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
+        verify(this.httpClient, times(1)).makeRequest(captor.capture());
+
+
+        assertEquals("s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("https", captor.getValue().getProtocol());
+        assertEquals("/my-bucket/my-object", captor.getValue().getPath());
+        assertEquals("PUT", captor.getValue().getMethod());
+        assertEquals("text/html", captor.getValue().getHeaders().get("Content-Type").get(0));
+        assertEquals("9", captor.getValue().getHeaders().get("Content-Length").get(0));
+        
+        assertEquals("aws:kms", captor.getValue().getHeaders().get("x-amz-server-side-encryption").get(0));
+        assertEquals("abc-123", captor.getValue().getHeaders().get("x-amz-server-side-encryption-aws-kms-key-id").get(0));
+
+        assertArrayEquals("test-data".getBytes(), captor.getValue().getBody());
+    }
+
 
     @Test
     public void can_handle_unicode_objects_for_get() throws IOException {

@@ -7,6 +7,7 @@ import com.github.kulminaator.s3.http.HttpClient;
 import com.github.kulminaator.s3.http.HttpRequest;
 import com.github.kulminaator.s3.http.HttpResponse;
 import com.github.kulminaator.s3.http.PicoHttpClient;
+import com.github.kulminaator.s3.options.PutObjectOptions;
 import com.github.kulminaator.s3.xml.S3XmlParser;
 import org.w3c.dom.Document;
 
@@ -51,6 +52,10 @@ public class PicoClient implements Client {
         result.setContentType(this.extractResponseHeader(response, "Content-Type"));
         result.setLastModified(this.extractResponseHeader(response, "Last-Modified"));
         result.setSize(Long.valueOf(this.extractResponseHeader(response, "Content-Length")));
+
+        if (response.getHeaders().containsKey("x-amz-server-side-encryption")) {
+            result.setServerSideEncrpytion(this.extractResponseHeader(response, "x-amz-server-side-encryption"));
+        }
         return result;
     }
 
@@ -143,6 +148,14 @@ public class PicoClient implements Client {
 
     @Override
     public void putObject(String bucket, String object, byte[] data, String contentType) throws S3AccessException {
+        PutObjectOptions options = new PutObjectOptions.Builder().withContentType(contentType).build();
+        putObject(bucket, object, data, options);
+    }
+
+    @Override
+    public void putObject(String bucket, String object, byte[] data, PutObjectOptions putObjectOptions)
+            throws S3AccessException
+    {
         final Map<String,List<String>> headers = new HashMap<>();
 
         final HttpRequest request = this.buildRequestBase("PUT");
@@ -150,8 +163,18 @@ public class PicoClient implements Client {
         request.setPath(this.getS3Path(bucket, object));
         request.setBody(data);
 
-        headers.put("Content-Type", Collections.singletonList(contentType));
+        headers.put("Content-Type", Collections.singletonList(putObjectOptions.getContentType()));
         headers.put("Content-Length", Collections.singletonList( String.valueOf(data.length)));
+
+        // this looks like some weird pattern, should make it look nicer
+        if (putObjectOptions.getServerSideEncryption() != null) {
+            headers.put("x-amz-server-side-encryption",
+                    Collections.singletonList(putObjectOptions.getServerSideEncryption()));
+            if (putObjectOptions.getServerSideEncryptionKeyId() != null) {
+                headers.put("x-amz-server-side-encryption-aws-kms-key-id",
+                        Collections.singletonList(putObjectOptions.getServerSideEncryptionKeyId()));
+            }
+        }
 
         this.secureRequest(request);
 

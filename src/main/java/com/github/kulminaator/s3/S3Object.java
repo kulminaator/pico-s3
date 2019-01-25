@@ -6,6 +6,7 @@ public class S3Object {
     private Long size;
     private String lastModified;
     private String contentType;
+    private String serverSideEncrpytion;
 
     public void setKey(String key) {
         this.key = key;
@@ -49,5 +50,13 @@ public class S3Object {
 
     public void setContentType(String contentType) {
         this.contentType = contentType;
+    }
+
+    public void setServerSideEncrpytion(String serverSideEncrpytion) {
+        this.serverSideEncrpytion = serverSideEncrpytion;
+    }
+
+    public String getServerSideEncrpytion() {
+        return serverSideEncrpytion;
     }
 }
