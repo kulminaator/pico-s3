@@ -204,7 +204,7 @@ public class RealLifeTest {
 
         S3Object objectData = pClient.getObject(this.bucketName, "put-test/uploaded-by-test-encrypted.xml");
 
-        assertEquals("AES256", objectData.getServerSideEncrpytion());
+        assertEquals("AES256", objectData.getServerSideEncryption());
     }
 
     private byte[] buildRandomXmlData() {

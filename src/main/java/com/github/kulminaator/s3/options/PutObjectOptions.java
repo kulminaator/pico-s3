@@ -62,7 +62,7 @@ public class PutObjectOptions {
         }
 
         /**
-         * Sets the encrpytion type used on the server side for the object.
+         * Sets the encryption type used on the server side for the object.
          * @param encryptionType The encryption type, either SERVER_SIDE_ENCRYPTION_S3 or SERVER_SIDE_ENCRYPTION_KMS.
          * @return Builder.
          */

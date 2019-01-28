@@ -54,7 +54,7 @@ public class PicoClient implements Client {
         result.setSize(Long.valueOf(this.extractResponseHeader(response, "Content-Length")));
 
         if (response.getHeaders().containsKey("x-amz-server-side-encryption")) {
-            result.setServerSideEncrpytion(this.extractResponseHeader(response, "x-amz-server-side-encryption"));
+            result.setServerSideEncryption(this.extractResponseHeader(response, "x-amz-server-side-encryption"));
         }
         return result;
     }
