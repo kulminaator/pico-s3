@@ -112,7 +112,7 @@ public class PicoClient implements Client {
             }
             if (prefix != null) {
                 paramsBuilder.append("&prefix=");
-                paramsBuilder.append(uriEncode(prefix, false));
+                paramsBuilder.append(uriEncode(prefix, true));
             }
             final HttpRequest request = this.buildRequestBase("GET");
             request.setHeaders(headers);

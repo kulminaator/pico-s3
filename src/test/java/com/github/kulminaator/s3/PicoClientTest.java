@@ -204,7 +204,7 @@ public class PicoClientTest {
         assertEquals("PUT", captor.getValue().getMethod());
         assertEquals("text/html", captor.getValue().getHeaders().get("Content-Type").get(0));
         assertEquals("9", captor.getValue().getHeaders().get("Content-Length").get(0));
-        
+
         assertEquals("aws:kms", captor.getValue().getHeaders().get("x-amz-server-side-encryption").get(0));
         assertEquals("abc-123", captor.getValue().getHeaders().get("x-amz-server-side-encryption-aws-kms-key-id").get(0));
 
@@ -253,13 +253,13 @@ public class PicoClientTest {
         verify(this.httpClient, times(3)).makeRequest(captor.capture());
 
         List<HttpRequest> requestsMade = captor.getAllValues();
-        assertEquals("list-type=2&prefix=my-object-folder/s%E2%82%ACcret-subfolder", requestsMade.get(0).getParams());
+        assertEquals("list-type=2&prefix=my-object-folder%2Fs%E2%82%ACcret-subfolder", requestsMade.get(0).getParams());
         assertEquals("list-type=2" +
                 "&continuation-token=14A3Bj7%2F8L49hvCZhqecpzT5OMIu7FwVz483Lmh3zo2HCC0JjlHwTWYZIoYV4%2BAo1" +
-                "&prefix=my-object-folder/s%E2%82%ACcret-subfolder", requestsMade.get(1).getParams());
+                "&prefix=my-object-folder%2Fs%E2%82%ACcret-subfolder", requestsMade.get(1).getParams());
         assertEquals("list-type=2" +
                 "&continuation-token=14A3Bj7%2F8L49hvCZhqecpzT5OMIu7FwVz483Lmh3zo2HCC0JjlHwTWYZIoYV4%2BAo1" +
-                "&prefix=my-object-folder/s%E2%82%ACcret-subfolder", requestsMade.get(2).getParams());
+                "&prefix=my-object-folder%2Fs%E2%82%ACcret-subfolder", requestsMade.get(2).getParams());
 
         assertEquals(result.size(), 5);
 
