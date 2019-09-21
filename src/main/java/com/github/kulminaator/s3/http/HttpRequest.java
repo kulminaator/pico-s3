@@ -25,7 +25,9 @@ public class HttpRequest {
     }
 
     public void setHeaders(Map<String, List<String>> headers) {
-        this.headers = headers;
+        HashMap<String, List<String>> safeHeaders = new HashMap<>();
+        safeHeaders.putAll(headers);
+        this.headers = safeHeaders;
     }
 
     public Map<String, List<String>> getHeaders() {

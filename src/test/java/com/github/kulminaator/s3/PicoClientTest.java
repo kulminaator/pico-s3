@@ -254,11 +254,11 @@ public class PicoClientTest {
 
         List<HttpRequest> requestsMade = captor.getAllValues();
         assertEquals("list-type=2&prefix=my-object-folder%2Fs%E2%82%ACcret-subfolder", requestsMade.get(0).getParams());
-        assertEquals("list-type=2" +
-                "&continuation-token=14A3Bj7%2F8L49hvCZhqecpzT5OMIu7FwVz483Lmh3zo2HCC0JjlHwTWYZIoYV4%2BAo1" +
+        assertEquals("" +
+                "continuation-token=14A3Bj7%2F8L49hvCZhqecpzT5OMIu7FwVz483Lmh3zo2HCC0JjlHwTWYZIoYV4%2BAo1&list-type=2" +
                 "&prefix=my-object-folder%2Fs%E2%82%ACcret-subfolder", requestsMade.get(1).getParams());
-        assertEquals("list-type=2" +
-                "&continuation-token=14A3Bj7%2F8L49hvCZhqecpzT5OMIu7FwVz483Lmh3zo2HCC0JjlHwTWYZIoYV4%2BAo1" +
+        assertEquals("" +
+                "continuation-token=14A3Bj7%2F8L49hvCZhqecpzT5OMIu7FwVz483Lmh3zo2HCC0JjlHwTWYZIoYV4%2BAo1&list-type=2" +
                 "&prefix=my-object-folder%2Fs%E2%82%ACcret-subfolder", requestsMade.get(2).getParams());
 
         assertEquals(result.size(), 5);

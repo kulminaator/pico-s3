@@ -240,6 +240,26 @@ public class RealLifeTest {
         System.out.println(objects);
     }
 
+
+    @Test
+    public void list_big_bucket_with_simple_credentials() throws Exception {
+        if (this.noEnv()) { assertTrue("Skipped", true); return;}
+        final SimpleCredentialsProvider simpleCredentialsProvider = new SimpleCredentialsProvider();
+        simpleCredentialsProvider.setAccessKeyId(this.accessKeyId);
+        simpleCredentialsProvider.setSecretAccessKey(this.secretAccessKeyId);
+        simpleCredentialsProvider.setSessionToken(this.sessionToken);
+
+        final Client pClient = new PicoClient.Builder()
+                .withRegion("eu-west-1")
+                .withCredentialsProvider(simpleCredentialsProvider)
+                .build();
+        final List<S3Object> objects = pClient.listObjects(this.publicBucketName);
+
+        assertTrue(objects.size() > 0);
+
+        System.out.println(objects);
+    }
+
     private boolean noEnv() {
         return !this.hasEnv;
     }

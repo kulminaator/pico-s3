@@ -95,7 +95,7 @@ public class PicoClient implements Client {
     public List<S3Object> listObjects(String bucket, String prefix) throws S3AccessException {
         /*make a url request to  https://s3-eu-west-1.amazonaws.com/bucket/?list-type=2&start-after=prefix */
         final Map<String,List<String>> headers = new HashMap<>();
-        final String params = "list-type=2";
+        final String listParams = "list-type=2";
 
         boolean hasMorePages = true;
         final List<S3Object> finalList = new ArrayList<>();
@@ -104,16 +104,21 @@ public class PicoClient implements Client {
         while (hasMorePages) {
 
             final StringBuilder paramsBuilder = new StringBuilder();
-            paramsBuilder.append(params);
 
             if (continuation != null) {
-                paramsBuilder.append("&continuation-token=");
+                paramsBuilder.append("continuation-token=");
                 paramsBuilder.append(uriEncode(continuation));
+                paramsBuilder.append("&");
+                paramsBuilder.append(listParams);
+            } else {
+                paramsBuilder.append(listParams);
             }
+
             if (prefix != null) {
                 paramsBuilder.append("&prefix=");
                 paramsBuilder.append(uriEncode(prefix, true));
             }
+
             final HttpRequest request = this.buildRequestBase("GET");
             request.setHeaders(headers);
             request.setPath(this.getS3Path(bucket, null));
@@ -159,7 +164,6 @@ public class PicoClient implements Client {
         final Map<String,List<String>> headers = new HashMap<>();
 
         final HttpRequest request = this.buildRequestBase("PUT");
-        request.setHeaders(headers);
         request.setPath(this.getS3Path(bucket, object));
         request.setBody(data);
 
@@ -175,6 +179,7 @@ public class PicoClient implements Client {
                         Collections.singletonList(putObjectOptions.getServerSideEncryptionKeyId()));
             }
         }
+        request.setHeaders(headers);
 
         this.secureRequest(request);
 
