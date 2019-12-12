@@ -40,9 +40,9 @@ public class PicoClient implements Client {
     @Override
     public S3Object getObject(String bucket, String object) throws S3AccessException {
         final Map<String,List<String>> headers = new HashMap<>();
-        final HttpRequest request = this.buildRequestBase("HEAD");
+        final HttpRequest request = this.buildRequestBase("HEAD", bucket);
         request.setHeaders(headers);
-        request.setPath(this.getS3Path(bucket, object));
+        request.setPath(this.getS3Path(object));
         this.secureRequest(request);
 
         final HttpResponse response = this.makeRequest(request);
@@ -59,11 +59,11 @@ public class PicoClient implements Client {
         return result;
     }
 
-    private HttpRequest buildRequestBase(String method) {
+    private HttpRequest buildRequestBase(String method, String bucket) {
         final HttpRequest request = new HttpRequest();
         request.setMethod(method);
         request.setProtocol(this.getS3HttpProtocol());
-        request.setHost(this.getS3Host());
+        request.setHost(this.getS3Host(this.region, bucket));
         request.setRegion(this.region);
         request.setConnectTimeout(this.connectTimeout);
         request.setReadTimeout(this.readTimeout);
@@ -119,9 +119,9 @@ public class PicoClient implements Client {
                 paramsBuilder.append(uriEncode(prefix, true));
             }
 
-            final HttpRequest request = this.buildRequestBase("GET");
+            final HttpRequest request = this.buildRequestBase("GET", bucket);
             request.setHeaders(headers);
-            request.setPath(this.getS3Path(bucket, null));
+            request.setPath(this.getS3Path(null));
             request.setParams(paramsBuilder.toString());
 
             this.secureRequest(request);
@@ -163,8 +163,8 @@ public class PicoClient implements Client {
     {
         final Map<String,List<String>> headers = new HashMap<>();
 
-        final HttpRequest request = this.buildRequestBase("PUT");
-        request.setPath(this.getS3Path(bucket, object));
+        final HttpRequest request = this.buildRequestBase("PUT", bucket);
+        request.setPath(this.getS3Path(object));
         request.setBody(data);
 
         headers.put("Content-Type", Collections.singletonList(putObjectOptions.getContentType()));
@@ -188,9 +188,9 @@ public class PicoClient implements Client {
 
     private byte[] getObjectData(String bucket, String object) throws S3AccessException {
         final Map<String,List<String>> headers = new HashMap<>();
-        final HttpRequest request = this.buildRequestBase("GET");
+        final HttpRequest request = this.buildRequestBase("GET", bucket);
         request.setHeaders(headers);
-        request.setPath(this.getS3Path(bucket, object));
+        request.setPath(this.getS3Path(object));
         this.secureRequest(request);
         final HttpResponse response = this.makeRequest(request);
         return response.getBody();
@@ -201,10 +201,12 @@ public class PicoClient implements Client {
         calculator.addSignatureHeaderForRequest(request, this.credentialsProvider);
     }
 
-    private String getS3Host() {
+    private String getS3Host(String region, String bucket) {
+        //   http://bucket.s3-aws-region.amazonaws.com
         final StringBuilder builder = new StringBuilder();
-        builder.append("s3-");
-        builder.append(this.region);
+        builder.append(bucket);
+        builder.append(".s3-");
+        builder.append(region);
         builder.append(".amazonaws.com");
         return builder.toString();
     }
@@ -217,11 +219,11 @@ public class PicoClient implements Client {
         }
     }
 
-    private String getS3Path(String bucket, String prefix) {
+    private String getS3Path(String prefix) {
         if (prefix == null) {
-            return "/" + bucket;
+            return "/";
         }
-        return "/" + bucket + "/" + uriEncode(prefix, false);
+        return "/" + uriEncode(prefix, false);
     }
 
     private void setHttps(final boolean https) {
