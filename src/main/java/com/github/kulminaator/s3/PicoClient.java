@@ -205,7 +205,7 @@ public class PicoClient implements Client {
         //   http://bucket.s3-aws-region.amazonaws.com
         final StringBuilder builder = new StringBuilder();
         builder.append(bucket);
-        builder.append(".s3-");
+        builder.append(".s3.");
         builder.append(region);
         builder.append(".amazonaws.com");
         return builder.toString();

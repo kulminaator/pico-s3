@@ -41,7 +41,7 @@ public class PicoClientTest {
         ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
         verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
-        assertEquals("my-bucket.s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("my-bucket.s3.elbonia-central-1.amazonaws.com", captor.getValue().getHost());
         assertEquals("https", captor.getValue().getProtocol());
         assertEquals("/my-object-folder/my-object", captor.getValue().getPath());
         assertNull(null, captor.getValue().getParams());
@@ -76,7 +76,7 @@ public class PicoClientTest {
         ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
         verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
-        assertEquals("my-bucket.s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("my-bucket.s3.elbonia-central-1.amazonaws.com", captor.getValue().getHost());
         assertEquals("https", captor.getValue().getProtocol());
         assertEquals("/my-object-folder/my-object", captor.getValue().getPath());
         assertNull(null, captor.getValue().getParams());
@@ -102,7 +102,7 @@ public class PicoClientTest {
         ArgumentCaptor<HttpRequest> captor = ArgumentCaptor.forClass(HttpRequest.class);
         verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
-        assertEquals("my-bucket.s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("my-bucket.s3.elbonia-central-1.amazonaws.com", captor.getValue().getHost());
         assertEquals("https", captor.getValue().getProtocol());
         assertEquals("/", captor.getValue().getPath());
         assertEquals("list-type=2", captor.getValue().getParams());
@@ -137,7 +137,7 @@ public class PicoClientTest {
         verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
 
-        assertEquals("my-bucket.s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("my-bucket.s3.elbonia-central-1.amazonaws.com", captor.getValue().getHost());
         assertEquals("https", captor.getValue().getProtocol());
         assertEquals("/my-object", captor.getValue().getPath());
         assertEquals("PUT", captor.getValue().getMethod());
@@ -165,7 +165,7 @@ public class PicoClientTest {
         verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
 
-        assertEquals("my-bucket.s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("my-bucket.s3.elbonia-central-1.amazonaws.com", captor.getValue().getHost());
         assertEquals("https", captor.getValue().getProtocol());
         assertEquals("/my-object", captor.getValue().getPath());
         assertEquals("PUT", captor.getValue().getMethod());
@@ -198,7 +198,7 @@ public class PicoClientTest {
         verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
 
-        assertEquals("my-bucket.s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("my-bucket.s3.elbonia-central-1.amazonaws.com", captor.getValue().getHost());
         assertEquals("https", captor.getValue().getProtocol());
         assertEquals("/my-object", captor.getValue().getPath());
         assertEquals("PUT", captor.getValue().getMethod());
@@ -226,7 +226,7 @@ public class PicoClientTest {
         verify(this.httpClient, times(1)).makeRequest(captor.capture());
 
         assertEquals("GET", captor.getValue().getMethod());
-        assertEquals("my-bucket.s3-elbonia-central-1.amazonaws.com", captor.getValue().getHost());
+        assertEquals("my-bucket.s3.elbonia-central-1.amazonaws.com", captor.getValue().getHost());
         assertEquals("https", captor.getValue().getProtocol());
         assertEquals("/my-%C3%96bject-folder/k%C3%A4sehau%C5%A1", captor.getValue().getPath());
         assertNull(null, captor.getValue().getParams());
@@ -289,7 +289,7 @@ public class PicoClientTest {
 
         HttpRequest request = captor.getValue();
         assertEquals("HEAD", request.getMethod());
-        assertEquals("my-bucket.s3-elbonia-central-1.amazonaws.com", request.getHost());
+        assertEquals("my-bucket.s3.elbonia-central-1.amazonaws.com", request.getHost());
         assertEquals("https", request.getProtocol());
         assertEquals("/my-object", request.getPath());
         assertNull(null, captor.getValue().getParams());
