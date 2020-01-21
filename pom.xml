@@ -5,7 +5,7 @@
 
   <groupId>com.github.kulminaator</groupId>
   <artifactId>pico-s3</artifactId>
-  <version>1.7</version>
+  <version>1.8-SNAPSHOT</version>
 
   <name>pico-s3</name>
   <!-- FIXME change it to the project's website -->
@@ -15,7 +15,7 @@
     <url>https://github.com/kulminaator/pico-s3</url>
     <connection>scm:git:ssh://git@github.com/kulminaator/pico-s3.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/kulminaator/pico-s3.git</developerConnection>
-    <tag>pico-s3-1.7</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>
