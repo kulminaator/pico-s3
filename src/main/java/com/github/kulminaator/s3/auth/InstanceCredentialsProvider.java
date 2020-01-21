@@ -64,6 +64,59 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
      */
     private void loadFromHttp() {
         try {
+            String instanceRole = this.loadRoleFromHttp();
+            HttpRequest request = new HttpRequest();
+            request.setProtocol("http");
+            request.setHost("169.254.169.254");
+            request.setPath("/latest/meta-data/iam/security-credentials/" + uriEncode(instanceRole, true));
+
+            HttpResponse response = this.client.makeRequest(request);
+
+            this.parseCredentials(new String(response.getBody(), StandardCharsets.UTF_8));
+        } catch (Exception exception) {
+            throw new IllegalStateException("Cannot access env params", exception);
+        }
+    }
+
+    /**
+     * Encodes uri components for http safety.
+     * Slightly modified code from amazon's example on their web page in authorization part.
+     * @param input The input string.
+     * @param encodeSlash Should slash be encoded or not.
+     */
+    private static String uriEncode(CharSequence input, boolean encodeSlash) {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < input.length(); i++) {
+            char ch = input.charAt(i);
+            if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')
+                    || (ch >= '0' && ch <= '9') || ch == '_' || ch == '-' || ch == '~' || ch == '.') {
+                result.append(ch);
+            } else if (ch == '/') {
+                result.append(encodeSlash ? "%2F" : ch);
+            } else {
+                result.append(toUrlHexUTF8(ch));
+            }
+        }
+        return result.toString();
+    }
+
+    /**
+     * Turns the char into utf8 string, grabs it's bytes in utf8 shape and encodes them one by one with url syntax.
+     * @param ch The char to encode.
+     * @return The encoded data.
+     */
+    private static String toUrlHexUTF8(char ch) {
+        final byte[] raw = ("" + ch).getBytes(StandardCharsets.UTF_8);
+        final StringBuilder hexString = new StringBuilder();
+        for (final byte rawByte : raw) {
+            hexString.append("%");
+            hexString.append(String.format("%02X", rawByte & 0XFF));
+        }
+        return hexString.toString().toUpperCase();
+    }
+
+    private String loadRoleFromHttp() {
+        try {
             HttpRequest request = new HttpRequest();
             request.setProtocol("http");
             request.setHost("169.254.169.254");
@@ -71,7 +124,13 @@ public class InstanceCredentialsProvider implements CredentialsProvider {
 
             HttpResponse response = this.client.makeRequest(request);
 
-            this.parseCredentials(new String(response.getBody(), StandardCharsets.UTF_8));
+            String instanceRole = new String(response.getBody(), StandardCharsets.UTF_8);
+
+            if (instanceRole.length() < 1) {
+                throw new IllegalStateException("No role found on " +
+                        "http://169.254.169.254/latest/meta-data/iam/security-credentials");
+            }
+            return instanceRole;
         } catch (Exception exception) {
             throw new IllegalStateException("Cannot access env params", exception);
         }
