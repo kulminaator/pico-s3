@@ -12,6 +12,9 @@ export PICO_TEST_OBJECT="some-bucket-object"
 export PICO_TEST_ACCESS_KEY="some-access-key"
 export PICO_TEST_SECRET_KEY="some-secret-key"
 export PICO_TEST_SESSION_TOKEN="some-session-token"
+export PICO_TEST_REGION="some-region"
+export PICO_TEST_HOST="some-cloud-provider-supporting-s3"
+export PICO_TEST_BIG_LIST_NUMBER="6"
 
 
 mvn test
