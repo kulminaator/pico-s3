@@ -28,16 +28,18 @@ public class PicoClient implements Client {
 
     private boolean https;
     private final String region;
+    private final String host;
     private HttpClient httpClient;
     private CredentialsProvider credentialsProvider;
     private int connectTimeout;
     private int readTimeout;
 
-    private PicoClient(String region) {
-        this.region = region;
-    }
+    private PicoClient(String region, String host) {
+		this.region = region;
+		this.host = host;
+	}
 
-    @Override
+	@Override
     public S3Object getObject(String bucket, String object) throws S3AccessException {
         final Map<String,List<String>> headers = new HashMap<>();
         final HttpRequest request = this.buildRequestBase("HEAD", bucket);
@@ -207,7 +209,7 @@ public class PicoClient implements Client {
         builder.append(bucket);
         builder.append(".s3.");
         builder.append(region);
-        builder.append(".amazonaws.com");
+        builder.append("." + host);
         return builder.toString();
     }
 
@@ -295,6 +297,7 @@ public class PicoClient implements Client {
     public static class Builder {
 
         private String region;
+        private String host = "amazonaws.com";
         private boolean https = true;
         private HttpClient httpClient = new PicoHttpClient();
         private CredentialsProvider credentialsProvider;
@@ -317,6 +320,11 @@ public class PicoClient implements Client {
             this.region = region;
             return this;
         }
+        
+        public Builder withHost(String host) {
+        	this.host = host;
+            return this;
+		}
 
         public Builder withCredentialsProvider(CredentialsProvider credentialsProvider) {
             this.credentialsProvider = credentialsProvider;
@@ -350,7 +358,7 @@ public class PicoClient implements Client {
         }
 
         public PicoClient build() {
-            final PicoClient client = new PicoClient(this.region);
+            final PicoClient client = new PicoClient(this.region, this.host);
             client.setHttps(this.https);
             client.setHttpClient(this.httpClient);
             client.setCredentialsProvider(this.credentialsProvider);

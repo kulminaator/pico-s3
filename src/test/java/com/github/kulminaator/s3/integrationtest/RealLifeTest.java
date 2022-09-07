@@ -27,8 +27,11 @@ public class RealLifeTest {
     private String accessKeyId;
     private String secretAccessKeyId;
     private String sessionToken;
+    private String region;
+    private String host;
     private String testObject;
     private String publicBucketName;
+	private String bigListNumber;
 
     @Before
     public void parseEnv() {
@@ -44,6 +47,9 @@ public class RealLifeTest {
         this.accessKeyId = System.getenv("PICO_TEST_ACCESS_KEY");
         this.secretAccessKeyId = System.getenv("PICO_TEST_SECRET_KEY");
         this.sessionToken = System.getenv("PICO_TEST_SESSION_TOKEN");
+        this.region = System.getenv("PICO_TEST_REGION");
+        this.host = System.getenv("PICO_TEST_HOST");
+        this.bigListNumber = System.getenv("PICO_TEST_BIG_LIST_NUMBER");
     }
 
     @Test
@@ -51,13 +57,15 @@ public class RealLifeTest {
         if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .build();
 
         // list the "root folder", as in no prefix
         List<S3Object> objects = pClient.listObjects(this.publicBucketName, null);
 
-        assertTrue(objects.size() > 1200);
+        int expectedListSize = (bigListNumber == null || bigListNumber.isBlank()) ?  1200 : Integer.parseInt(bigListNumber);
+        assertTrue(objects.size() > expectedListSize);
     }
 
     @Test
@@ -65,7 +73,8 @@ public class RealLifeTest {
         if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .withReadTimeout(1)
                 .withConnectTimeout(1)
                 .build();
@@ -87,7 +96,8 @@ public class RealLifeTest {
         if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .build();
 
         // list the "root folder", as in no prefix
@@ -102,7 +112,8 @@ public class RealLifeTest {
         if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .build();
 
         // list the "root folder", as in no prefix
@@ -116,7 +127,8 @@ public class RealLifeTest {
         if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .build();
 
         // list the "root folder", as in no prefix
@@ -139,7 +151,8 @@ public class RealLifeTest {
         if (this.noEnv()) { assertTrue("Skipped", true); return;}
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .build();
         final String data =
                 pClient.getObjectDataAsString(this.bucketName, "public-read-folder/anyone_can_read_this.txt");
@@ -159,7 +172,8 @@ public class RealLifeTest {
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
                 .withCredentialsProvider(simpleCredentialsProvider)
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .build();
 
         byte[] randomData = this.buildRandomXmlData();
@@ -175,7 +189,9 @@ public class RealLifeTest {
 
     @Test
     public void put_object_with_simple_credentials_and_crypto() throws Exception {
-        if (this.noEnv()) { assertTrue("Skipped", true); return;}
+        
+    	// Scaleway doesn't support server side crypto
+    	if (this.noEnv() || this.host.equals("scw.cloud")) { assertTrue("Skipped", true); return;}
 
         final SimpleCredentialsProvider simpleCredentialsProvider = new SimpleCredentialsProvider();
         simpleCredentialsProvider.setAccessKeyId(this.accessKeyId);
@@ -185,7 +201,8 @@ public class RealLifeTest {
         final Client pClient = new PicoClient.Builder()
                 .withHttpClient(new PicoHttpClient(true))
                 .withCredentialsProvider(simpleCredentialsProvider)
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .build();
 
         byte[] randomData = this.buildRandomXmlData();
@@ -230,7 +247,8 @@ public class RealLifeTest {
         simpleCredentialsProvider.setSessionToken(this.sessionToken);
 
         final Client pClient = new PicoClient.Builder()
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .withCredentialsProvider(simpleCredentialsProvider)
                 .build();
         final List<S3Object> objects = pClient.listObjects(this.bucketName);
@@ -250,7 +268,8 @@ public class RealLifeTest {
         simpleCredentialsProvider.setSessionToken(this.sessionToken);
 
         final Client pClient = new PicoClient.Builder()
-                .withRegion("eu-west-1")
+                .withRegion(region)
+                .withHost(host)
                 .withCredentialsProvider(simpleCredentialsProvider)
                 .build();
         final List<S3Object> objects = pClient.listObjects(this.publicBucketName);
