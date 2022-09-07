@@ -31,3 +31,8 @@ hs_err_pid*
 pom.xml.releaseBackup
 release.properties
 *.iml
+
+# eclipse
+.project
+.classpath
+.settings

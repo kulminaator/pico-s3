@@ -10,10 +10,10 @@ import org.mockito.ArgumentCaptor;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -90,12 +90,12 @@ public class PicoClientTest {
 
 
     @Test
-    public void fetches_objects_listing() throws IOException {
+    public void fetches_objects_listing() throws IOException, URISyntaxException {
         // given
         Client client = this.buildClient();
-        when(this.httpClient.makeRequest(any())).thenReturn(
-                this.buildResponseOfResource("s3_response_content.xml"));
-
+        
+        doReturn(this.buildResponseOfResource("s3_response_content.xml")).when(this.httpClient).makeRequest(any());
+        
         //when
         List<S3Object> objectList = client.listObjects("my-bucket");
 
@@ -235,15 +235,13 @@ public class PicoClientTest {
     }
 
     @Test
-    public void can_handle_paginated_object_lists() throws IOException {
+    public void can_handle_paginated_object_lists() throws IOException, URISyntaxException {
         // given
         Client client = this.buildClient();
-
-        when(this.httpClient.makeRequest(any())).thenReturn(
+        
+        doReturn(this.buildResponseOfResource("pagination_s3_response_content_truncated.xml"),
                 this.buildResponseOfResource("pagination_s3_response_content_truncated.xml"),
-                this.buildResponseOfResource("pagination_s3_response_content_truncated.xml"),
-                this.buildResponseOfResource("pagination_s3_response_content_final.xml")
-        );
+                this.buildResponseOfResource("pagination_s3_response_content_final.xml")).when(this.httpClient).makeRequest(any());
 
         //when
         List<S3Object> result = client.listObjects("my-bucket", "my-object-folder/s€cret-subfolder");
@@ -332,8 +330,8 @@ public class PicoClientTest {
         return response;
     }
 
-    private HttpResponse buildResponseOfResource(String resourceName) throws IOException {
-        final Path path = Paths.get(this.getClass().getClassLoader().getResource(resourceName).getPath());
+    private HttpResponse buildResponseOfResource(String resourceName) throws IOException, URISyntaxException {
+        final Path path = Path.of(this.getClass().getClassLoader().getResource(resourceName).toURI());
         final String data = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
         return buildResponseOf(data);
     }
